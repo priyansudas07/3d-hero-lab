@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { CoreMesh } from './CoreMesh';
+import { SynapticNodes } from './SynapticNodes';
+import { ConnectionLines } from './ConnectionLines';
 import { NeuralCoreProps } from '@/types/neuralCore';
 
 export function NeuralCoreCanvas({
@@ -11,6 +13,7 @@ export function NeuralCoreCanvas({
   secondaryColor = '#7000FF',
   backgroundColor = '#05050A',
   rotationSpeed = 1.0,
+  nodeCount = 800,
   headline = 'Neural Processing Engine',
   subheadline = 'Next-generation AI core visualization powered by WebGL & GLSL Shaders',
   ctaText = 'Explore Architecture',
@@ -41,7 +44,7 @@ export function NeuralCoreCanvas({
       {/* 3D Canvas Layer */}
       <div className="absolute inset-0 z-0">
         <Canvas
-          camera={{ position: [0, 0, 5], fov: 45 }}
+          camera={{ position: [0, 0, 7], fov: 45 }}
           dpr={typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1}
           gl={{ antialias: true, alpha: true }}
         >
@@ -57,6 +60,20 @@ export function NeuralCoreCanvas({
             rotationSpeed={rotationSpeed}
           />
 
+          {/* Phase 2: Instanced Synaptic Node Cloud */}
+          <SynapticNodes
+            count={nodeCount}
+            radius={5.5}
+            color={primaryColor}
+          />
+
+          {/* Phase 2: Dynamic Connection Pulse Lines */}
+          <ConnectionLines
+            nodeCount={Math.min(nodeCount, 400)}
+            maxConnections={500}
+            color={secondaryColor}
+          />
+
           <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 1.5} minPolarAngle={Math.PI / 3} />
         </Canvas>
       </div>
@@ -66,7 +83,7 @@ export function NeuralCoreCanvas({
         <div className="max-w-4xl space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-950/20 text-cyan-400 text-xs font-mono tracking-wider uppercase mb-2">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-            Phase 1 Prototype Active
+            Phase 2: Synaptic Network Active
           </div>
 
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white drop-shadow-[0_0_35px_rgba(0,240,255,0.4)]">
