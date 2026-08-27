@@ -7,28 +7,33 @@ import * as THREE from 'three';
 interface SynapticNodesProps {
   count?: number;
   radius?: number;
-  color?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
 }
 
 export function SynapticNodes({
-  count = 1000,
-  radius = 6.0,
-  color = '#00F0FF',
+  count = 5000,
+  radius = 6.2,
+  primaryColor = '#00F0FF',
+  secondaryColor = '#A040FF',
 }: SynapticNodesProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
 
-  // Generate node positions in a spherical shell around core
-  const { positions, randomScales, dummy } = useMemo(() => {
+  const { positions, randomScales, dummy, colors } = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const scales = new Float32Array(count);
+    const cols = new Float32Array(count * 3);
     const tempDummy = new THREE.Object3D();
+
+    const c1 = new THREE.Color(primaryColor);
+    const c2 = new THREE.Color(secondaryColor);
 
     for (let i = 0; i < count; i++) {
       const u = Math.random();
       const v = Math.random();
       const theta = u * 2.0 * Math.PI;
       const phi = Math.acos(2.0 * v - 1.0);
-      const r = 2.0 + Math.cbrt(Math.random()) * (radius - 2.0); // Keep inner clearance for core
+      const r = 2.2 + Math.cbrt(Math.random()) * (radius - 2.2);
 
       const x = r * Math.sin(phi) * Math.cos(theta);
       const y = r * Math.sin(phi) * Math.sin(theta);
@@ -38,37 +43,47 @@ export function SynapticNodes({
       pos[i * 3 + 1] = y;
       pos[i * 3 + 2] = z;
 
-      scales[i] = 0.5 + Math.random() * 0.8;
+      scales[i] = 0.4 + Math.random() * 0.7;
+
+      const mixRatio = Math.random();
+      const nodeColor = c1.clone().lerp(c2, mixRatio);
+      cols[i * 3] = nodeColor.r;
+      cols[i * 3 + 1] = nodeColor.g;
+      cols[i * 3 + 2] = nodeColor.b;
     }
 
-    return { positions: pos, randomScales: scales, dummy: tempDummy };
-  }, [count, radius]);
+    return { positions: pos, randomScales: scales, dummy: tempDummy, colors: cols };
+  }, [count, radius, primaryColor, secondaryColor]);
 
   useEffect(() => {
     if (!meshRef.current) return;
 
+    const colorAttr = new THREE.InstancedBufferAttribute(colors, 3);
+    meshRef.current.instanceColor = colorAttr;
+
     for (let i = 0; i < count; i++) {
       dummy.position.set(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
-      dummy.scale.setScalar(randomScales[i] * 0.04);
+      dummy.scale.setScalar(randomScales[i] * 0.045);
       dummy.updateMatrix();
       meshRef.current.setMatrixAt(i, dummy.matrix);
     }
     meshRef.current.instanceMatrix.needsUpdate = true;
-  }, [count, positions, randomScales, dummy]);
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true;
+    }
+  }, [count, positions, randomScales, dummy, colors]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
     const time = state.clock.elapsedTime;
-
-    // Subtle ambient breathing float
-    meshRef.current.rotation.y = time * 0.05;
-    meshRef.current.rotation.x = Math.sin(time * 0.03) * 0.1;
+    meshRef.current.rotation.y = time * 0.04;
+    meshRef.current.rotation.x = Math.sin(time * 0.02) * 0.08;
   });
 
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
-      <sphereGeometry args={[1, 8, 8]} />
-      <meshBasicMaterial color={color} transparent opacity={0.85} />
+      <sphereGeometry args={[1, 6, 6]} />
+      <meshBasicMaterial transparent opacity={0.9} />
     </instancedMesh>
   );
 }
