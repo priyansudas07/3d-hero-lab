@@ -28,22 +28,20 @@ const fragmentShader = `
   varying float vProgress;
 
   void main() {
-    // Sharpen wave pulse peak along connection vector
     float pulse = sin((vProgress * 12.0) - (uTime * 2.5)) * 0.5 + 0.5;
-    pulse = pow(pulse, 6.0);
+    pulse = pow(pulse, 5.0);
 
-    // Inactive baseline line opacity: subtle 0.06; active pulse: 0.65
-    vec3 finalColor = mix(uColor * 0.2, uColor * 1.8, pulse);
-    float alpha = mix(0.06, 0.65, pulse);
+    vec3 finalColor = mix(uColor * 0.25, uColor * 1.6, pulse);
+    float alpha = mix(0.05, 0.6, pulse);
 
     gl_FragColor = vec4(finalColor, alpha);
   }
 `;
 
 export function ConnectionLines({
-  nodeCount = 250,
+  nodeCount = 200,
   maxConnections = 300,
-  maxDistance = 1.8,
+  maxDistance = 2.0,
   color = '#A040FF',
 }: ConnectionLinesProps) {
   const lineRef = useRef<THREE.LineSegments>(null);
@@ -68,11 +66,15 @@ export function ConnectionLines({
 
     const linePositions: number[] = [];
     const lineProgress: number[] = [];
-    let connectionCount = 0;
+    const connectionCounts = new Uint8Array(nodes.length);
+    let totalConnections = 0;
 
     for (let i = 0; i < nodes.length; i++) {
+      if (connectionCounts[i] >= 3) continue; // Cap max 3 connections per node to prevent starbursts
+
       for (let j = i + 1; j < nodes.length; j++) {
-        if (connectionCount >= maxConnections) break;
+        if (totalConnections >= maxConnections) break;
+        if (connectionCounts[j] >= 3) continue;
 
         const dist = nodes[i].distanceTo(nodes[j]);
         if (dist < maxDistance) {
@@ -80,10 +82,12 @@ export function ConnectionLines({
           linePositions.push(nodes[j].x, nodes[j].y, nodes[j].z);
 
           lineProgress.push(0.0, 1.0);
-          connectionCount++;
+          connectionCounts[i]++;
+          connectionCounts[j]++;
+          totalConnections++;
         }
       }
-      if (connectionCount >= maxConnections) break;
+      if (totalConnections >= maxConnections) break;
     }
 
     const geometry = new THREE.BufferGeometry();

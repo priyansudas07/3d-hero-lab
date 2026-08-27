@@ -47,7 +47,7 @@ export function CoreMesh({
         <meshStandardMaterial
           color="#00F0FF"
           emissive="#00F0FF"
-          emissiveIntensity={1.4}
+          emissiveIntensity={1.2}
           wireframe
           metalness={0.9}
           roughness={0.1}
@@ -60,20 +60,23 @@ export function CoreMesh({
         <meshStandardMaterial
           color="#A040FF"
           emissive="#A040FF"
-          emissiveIntensity={1.8}
+          emissiveIntensity={1.5}
           wireframe
           metalness={0.95}
           roughness={0.05}
         />
       </mesh>
 
-      {/* Central Singularity Glow Core */}
+      {/* Central Singularity Soft Glowing Core */}
       <mesh ref={glowRef}>
         <sphereGeometry args={[0.48, 32, 32]} />
-        <meshBasicMaterial
-          color="#FFFFFF"
+        <meshStandardMaterial
+          color="#00F0FF"
+          emissive="#A040FF"
+          emissiveIntensity={2.0}
           transparent
-          opacity={0.98}
+          opacity={0.85}
+          roughness={0.2}
         />
       </mesh>
     </group>
