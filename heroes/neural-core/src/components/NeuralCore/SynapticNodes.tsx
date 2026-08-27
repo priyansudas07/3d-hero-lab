@@ -4,6 +4,7 @@ import React, { useRef, useMemo, useEffect } from 'react';
 import { useFrame, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SignalPropagator } from '../../core/3d/synaptic/SignalPropagator';
+import { SpatialGrid } from '../../core/3d/synaptic/SpatialGrid';
 
 interface SynapticNodesProps {
   count?: number;
@@ -24,15 +25,20 @@ export function SynapticNodes({
 }: SynapticNodesProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const signalPropagator = useMemo(() => new SignalPropagator(), []);
+  const spatialGrid = useMemo(() => new SpatialGrid(2.5), []);
   const currentPointerWorld = useRef(new THREE.Vector3(0, 0, 0));
 
+  // Reusable object references to prevent garbage collection allocation spikes
+  const reusableDummy = useMemo(() => new THREE.Object3D(), []);
+  const reusableColor = useMemo(() => new THREE.Color(), []);
+  const neighborBuffer = useMemo(() => new Array<number>(), []);
+
   // Initialize node positions, base scales, and adjacency graph
-  const { initialPositions, currentPositions, scales, dummy, baseColors, adjacencyList } = useMemo(() => {
+  const { initialPositions, currentPositions, scales, baseColors, adjacencyList } = useMemo(() => {
     const initPos = new Float32Array(count * 3);
     const currPos = new Float32Array(count * 3);
     const scs = new Float32Array(count);
     const cols = new Float32Array(count * 3);
-    const tempDummy = new THREE.Object3D();
     const graph = new Map<number, number[]>();
 
     const c1 = new THREE.Color(primaryColor);
@@ -88,15 +94,16 @@ export function SynapticNodes({
       graph.set(i, []);
     }
 
-    // Build light adjacency graph for signal traversal
-    for (let i = 0; i < Math.min(count, 500); i++) {
-      for (let j = i + 1; j < Math.min(count, 500); j++) {
-        const dx = initPos[i * 3] - initPos[j * 3];
-        const dy = initPos[i * 3 + 1] - initPos[j * 3 + 1];
-        const dz = initPos[i * 3 + 2] - initPos[j * 3 + 2];
-        const distSq = dx * dx + dy * dy + dz * dz;
+    // Build spatial grid lookup for O(1) adjacency
+    spatialGrid.buildGrid(initPos, count);
 
-        if (distSq < 4.0) {
+    for (let i = 0; i < Math.min(count, 1000); i++) {
+      const neighbors: number[] = [];
+      spatialGrid.getNeighbors(initPos[i * 3], initPos[i * 3 + 1], initPos[i * 3 + 2], 2.2, neighbors);
+
+      for (let k = 0; k < neighbors.length; k++) {
+        const j = neighbors[k];
+        if (j > i) {
           graph.get(i)!.push(j);
           graph.get(j)!.push(i);
         }
@@ -107,11 +114,10 @@ export function SynapticNodes({
       initialPositions: initPos,
       currentPositions: currPos,
       scales: scs,
-      dummy: tempDummy,
       baseColors: cols,
       adjacencyList: graph,
     };
-  }, [count, primaryColor, secondaryColor]);
+  }, [count, primaryColor, secondaryColor, spatialGrid]);
 
   useEffect(() => {
     if (!meshRef.current) return;
@@ -119,13 +125,13 @@ export function SynapticNodes({
     meshRef.current.instanceColor = colorAttr;
 
     for (let i = 0; i < count; i++) {
-      dummy.position.set(initialPositions[i * 3], initialPositions[i * 3 + 1], initialPositions[i * 3 + 2]);
-      dummy.scale.setScalar(scales[i]);
-      dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
+      reusableDummy.position.set(initialPositions[i * 3], initialPositions[i * 3 + 1], initialPositions[i * 3 + 2]);
+      reusableDummy.scale.setScalar(scales[i]);
+      reusableDummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, reusableDummy.matrix);
     }
     meshRef.current.instanceMatrix.needsUpdate = true;
-  }, [count, initialPositions, scales, dummy, baseColors]);
+  }, [count, initialPositions, scales, reusableDummy, baseColors]);
 
   const handlePointerDown = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
@@ -148,45 +154,61 @@ export function SynapticNodes({
     const activeSignalIntensities = signalPropagator.update(delta);
     const instanceColors = meshRef.current.instanceColor;
 
+    // Spatial Grid Neighbor Query for Mouse Interaction (Zero O(N^2) loops)
+    const numNear = spatialGrid.getNeighbors(
+      currentPointerWorld.current.x,
+      currentPointerWorld.current.y,
+      currentPointerWorld.current.z,
+      interactionRadius,
+      neighborBuffer
+    );
+
+    const nearSet = new Set(neighborBuffer.slice(0, numNear));
+
     for (let i = 0; i < count; i++) {
       const ix = initialPositions[i * 3];
       const iy = initialPositions[i * 3 + 1];
       const iz = initialPositions[i * 3 + 2];
-
-      // Mouse Force Field Calculation
-      const dx = ix - currentPointerWorld.current.x;
-      const dy = iy - currentPointerWorld.current.y;
-      const distSq = dx * dx + dy * dy;
 
       let targetX = ix;
       let targetY = iy;
       let targetZ = iz;
       let currentScale = scales[i];
 
-      if (distSq < interactionRadius * interactionRadius) {
-        const dist = Math.sqrt(distSq);
-        const factor = (1.0 - dist / interactionRadius);
+      if (nearSet.has(i)) {
+        const dx = ix - currentPointerWorld.current.x;
+        const dy = iy - currentPointerWorld.current.y;
+        const distSq = dx * dx + dy * dy;
 
-        // Attraction / displacement force vector
-        targetX += (dx / dist) * factor * attractionStrength;
-        targetY += (dy / dist) * factor * attractionStrength;
-        currentScale *= (1.0 + factor * 0.8); // Hovered state brightening/scale increase
+        if (distSq < interactionRadius * interactionRadius && distSq > 0.0001) {
+          const dist = Math.sqrt(distSq);
+          const factor = 1.0 - dist / interactionRadius;
+
+          targetX += (dx / dist) * factor * attractionStrength;
+          targetY += (dy / dist) * factor * attractionStrength;
+          currentScale *= 1.0 + factor * 0.8;
+        }
       }
 
-      // Smooth Position Interpolation
+      // Fast Position Interpolation
       currentPositions[i * 3] = THREE.MathUtils.damp(currentPositions[i * 3], targetX, 6, delta);
       currentPositions[i * 3 + 1] = THREE.MathUtils.damp(currentPositions[i * 3 + 1], targetY, 6, delta);
       currentPositions[i * 3 + 2] = THREE.MathUtils.damp(currentPositions[i * 3 + 2], targetZ, 6, delta);
 
-      dummy.position.set(currentPositions[i * 3], currentPositions[i * 3 + 1], currentPositions[i * 3 + 2]);
-      dummy.scale.setScalar(currentScale);
-      dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
+      reusableDummy.position.set(currentPositions[i * 3], currentPositions[i * 3 + 1], currentPositions[i * 3 + 2]);
+      reusableDummy.scale.setScalar(currentScale);
+      reusableDummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, reusableDummy.matrix);
 
-      // Signal Propagation Impulse Color Flash
+      // Fast Signal Impulse Color Update
       if (instanceColors && activeSignalIntensities.has(i)) {
         const intensity = activeSignalIntensities.get(i)!;
-        instanceColors.setXYZ(i, 1.0 * intensity + baseColors[i * 3] * (1 - intensity), 1.0 * intensity + baseColors[i * 3 + 1] * (1 - intensity), 1.0);
+        instanceColors.setXYZ(
+          i,
+          1.0 * intensity + baseColors[i * 3] * (1 - intensity),
+          1.0 * intensity + baseColors[i * 3 + 1] * (1 - intensity),
+          1.0
+        );
       } else if (instanceColors) {
         instanceColors.setXYZ(i, baseColors[i * 3], baseColors[i * 3 + 1], baseColors[i * 3 + 2]);
       }
