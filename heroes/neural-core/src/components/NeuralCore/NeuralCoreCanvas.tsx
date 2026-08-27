@@ -14,7 +14,7 @@ export function NeuralCoreCanvas({
   secondaryColor = '#A040FF',
   backgroundColor = '#030308',
   rotationSpeed = 1.0,
-  nodeCount = 5000,
+  nodeCount = 3500,
   className = '',
 }: NeuralCoreProps) {
   const [mounted, setMounted] = useState(false);
@@ -41,7 +41,7 @@ export function NeuralCoreCanvas({
       {/* 3D Canvas Layer */}
       <div className="absolute inset-0 z-0">
         <Canvas
-          camera={{ position: [0, 0, 7.5], fov: 45 }}
+          camera={{ position: [0, 0, 8.5], fov: 45 }}
           dpr={typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1}
           gl={{ antialias: true, alpha: true }}
         >
@@ -50,26 +50,25 @@ export function NeuralCoreCanvas({
           <directionalLight position={[10, 10, 5]} intensity={1.8} color={primaryColor} />
           <pointLight position={[-10, -10, -5]} intensity={1.2} color={secondaryColor} />
           
-          {/* Refined Central Core with Wireframe Shell */}
+          {/* Central Neural Core Structure */}
           <CoreMesh
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
             rotationSpeed={rotationSpeed}
           />
 
-          {/* 5,000 Instanced Synaptic Nodes */}
+          {/* Phase 3A: Organic Branching Axon Node Network */}
           <SynapticNodes
             count={nodeCount}
-            radius={6.2}
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
           />
 
-          {/* 500 Dynamic Connection Pulse Lines */}
+          {/* Phase 3A: Targeted Neural Axon Connection Lines */}
           <ConnectionLines
-            nodeCount={500}
-            maxConnections={500}
-            maxDistance={2.4}
+            nodeCount={250}
+            maxConnections={250}
+            maxDistance={2.2}
             color={secondaryColor}
           />
 
@@ -77,8 +76,8 @@ export function NeuralCoreCanvas({
         </Canvas>
       </div>
 
-      {/* Cybernetic Telemetry HUD Overlay */}
-      <HeroOverlay nodeCount={nodeCount} connectionCount={500} />
+      {/* Clean Cybernetic Hero UI Overlay */}
+      <HeroOverlay />
     </div>
   );
 }
