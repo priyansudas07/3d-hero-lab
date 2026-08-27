@@ -1,32 +1,42 @@
 'use client';
 
 import React, { useRef, useMemo, useEffect } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
+import { SignalPropagator } from '../../core/3d/synaptic/SignalPropagator';
 
 interface SynapticNodesProps {
   count?: number;
+  interactionRadius?: number;
+  attractionStrength?: number;
   primaryColor?: string;
   secondaryColor?: string;
+  onNodeClick?: (nodeId: number) => void;
 }
 
 export function SynapticNodes({
   count = 3500,
+  interactionRadius = 2.5,
+  attractionStrength = 0.25,
   primaryColor = '#00F0FF',
   secondaryColor = '#A040FF',
+  onNodeClick,
 }: SynapticNodesProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
+  const signalPropagator = useMemo(() => new SignalPropagator(), []);
   const currentPointerWorld = useRef(new THREE.Vector3(0, 0, 0));
 
-  const { positions, randomScales, dummy, colors } = useMemo(() => {
-    const pos = new Float32Array(count * 3);
-    const scales = new Float32Array(count);
+  // Initialize node positions, base scales, and adjacency graph
+  const { initialPositions, currentPositions, scales, dummy, baseColors, adjacencyList } = useMemo(() => {
+    const initPos = new Float32Array(count * 3);
+    const currPos = new Float32Array(count * 3);
+    const scs = new Float32Array(count);
     const cols = new Float32Array(count * 3);
     const tempDummy = new THREE.Object3D();
+    const graph = new Map<number, number[]>();
 
     const c1 = new THREE.Color(primaryColor);
     const c2 = new THREE.Color(secondaryColor);
-    const cDeep = new THREE.Color('#301050');
 
     const numAxons = 6;
     const axonAngles = Array.from({ length: numAxons }, (_, i) => (i / numAxons) * Math.PI * 2.0);
@@ -34,11 +44,10 @@ export function SynapticNodes({
     for (let i = 0; i < count; i++) {
       let x = 0, y = 0, z = 0;
       let scale = 0.015;
-      let nodeColor = c1;
 
       const pType = Math.random();
 
-      if (pType < 0.25) {
+      if (pType < 0.3) {
         const r = 0.8 + Math.cbrt(Math.random()) * 1.5;
         const theta = Math.random() * Math.PI * 2.0;
         const phi = Math.acos(2.0 * Math.random() - 1.0);
@@ -46,84 +55,158 @@ export function SynapticNodes({
         x = r * Math.sin(phi) * Math.cos(theta);
         y = r * Math.sin(phi) * Math.sin(theta);
         z = r * Math.cos(phi);
-
-        scale = 0.018 + Math.random() * 0.02;
-        nodeColor = c1.clone().lerp(c2, Math.random() * 0.4);
-      } else if (pType < 0.75) {
+        scale = 0.018 + Math.random() * 0.015;
+      } else {
         const axonIdx = Math.floor(Math.random() * numAxons);
         const baseAngle = axonAngles[axonIdx];
-        const distAlongAxon = 1.5 + Math.pow(Math.random(), 1.5) * 5.5;
+        const distAlongAxon = 1.5 + Math.pow(Math.random(), 1.5) * 5.0;
 
-        const spiralAngle = distAlongAxon * 1.2 + Math.random() * 0.5;
-        const dispersionRadius = 0.2 + (distAlongAxon * 0.15) * Math.random();
+        const spiralAngle = distAlongAxon * 1.2;
+        const dispersionRadius = 0.2 + (distAlongAxon * 0.1);
 
         x = Math.cos(baseAngle) * distAlongAxon + Math.cos(spiralAngle) * dispersionRadius;
         y = Math.sin(baseAngle) * distAlongAxon + Math.sin(spiralAngle) * dispersionRadius;
-        z = (Math.random() - 0.5) * (distAlongAxon * 0.4);
-
-        scale = 0.012 + Math.random() * 0.015;
-        nodeColor = c1.clone().lerp(c2, distAlongAxon / 7.0);
-      } else {
-        x = (Math.random() - 0.5) * 16.0;
-        y = (Math.random() - 0.5) * 12.0;
-        z = -10.0 + Math.random() * 14.0;
-
-        scale = (z > 2.0) ? 0.025 : 0.01;
-        nodeColor = (z < -4.0) ? cDeep : c2;
+        z = (Math.random() - 0.5) * (distAlongAxon * 0.3);
+        scale = 0.012 + Math.random() * 0.012;
       }
 
-      pos[i * 3] = x;
-      pos[i * 3 + 1] = y;
-      pos[i * 3 + 2] = z;
+      initPos[i * 3] = x;
+      initPos[i * 3 + 1] = y;
+      initPos[i * 3 + 2] = z;
 
-      scales[i] = scale;
+      currPos[i * 3] = x;
+      currPos[i * 3 + 1] = y;
+      currPos[i * 3 + 2] = z;
 
+      scs[i] = scale;
+
+      const nodeColor = c1.clone().lerp(c2, Math.random());
       cols[i * 3] = nodeColor.r;
       cols[i * 3 + 1] = nodeColor.g;
       cols[i * 3 + 2] = nodeColor.b;
+
+      graph.set(i, []);
     }
 
-    return { positions: pos, randomScales: scales, dummy: tempDummy, colors: cols };
+    // Build light adjacency graph for signal traversal
+    for (let i = 0; i < Math.min(count, 500); i++) {
+      for (let j = i + 1; j < Math.min(count, 500); j++) {
+        const dx = initPos[i * 3] - initPos[j * 3];
+        const dy = initPos[i * 3 + 1] - initPos[j * 3 + 1];
+        const dz = initPos[i * 3 + 2] - initPos[j * 3 + 2];
+        const distSq = dx * dx + dy * dy + dz * dz;
+
+        if (distSq < 4.0) {
+          graph.get(i)!.push(j);
+          graph.get(j)!.push(i);
+        }
+      }
+    }
+
+    return {
+      initialPositions: initPos,
+      currentPositions: currPos,
+      scales: scs,
+      dummy: tempDummy,
+      baseColors: cols,
+      adjacencyList: graph,
+    };
   }, [count, primaryColor, secondaryColor]);
 
   useEffect(() => {
     if (!meshRef.current) return;
-
-    const colorAttr = new THREE.InstancedBufferAttribute(colors, 3);
+    const colorAttr = new THREE.InstancedBufferAttribute(new Float32Array(baseColors), 3);
     meshRef.current.instanceColor = colorAttr;
 
     for (let i = 0; i < count; i++) {
-      dummy.position.set(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
-      dummy.scale.setScalar(randomScales[i]);
+      dummy.position.set(initialPositions[i * 3], initialPositions[i * 3 + 1], initialPositions[i * 3 + 2]);
+      dummy.scale.setScalar(scales[i]);
       dummy.updateMatrix();
       meshRef.current.setMatrixAt(i, dummy.matrix);
     }
     meshRef.current.instanceMatrix.needsUpdate = true;
-    if (meshRef.current.instanceColor) {
-      meshRef.current.instanceColor.needsUpdate = true;
+  }, [count, initialPositions, scales, dummy, baseColors]);
+
+  const handlePointerDown = (e: ThreeEvent<MouseEvent>) => {
+    e.stopPropagation();
+    if (e.instanceId !== undefined) {
+      signalPropagator.triggerSignal(e.instanceId, adjacencyList);
+      if (onNodeClick) onNodeClick(e.instanceId);
     }
-  }, [count, positions, randomScales, dummy, colors]);
+  };
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
-    const time = state.clock.elapsedTime;
 
-    // Convert pointer state (-1 to +1) to 3D world target space
+    // Dampened cursor position in world coordinates
     const targetWorldX = state.pointer.x * 6.0;
     const targetWorldY = state.pointer.y * 4.0;
 
     currentPointerWorld.current.x = THREE.MathUtils.damp(currentPointerWorld.current.x, targetWorldX, 5, delta);
     currentPointerWorld.current.y = THREE.MathUtils.damp(currentPointerWorld.current.y, targetWorldY, 5, delta);
 
-    // Calm ambient background rotation
-    meshRef.current.rotation.y = time * 0.025;
-    meshRef.current.rotation.x = Math.sin(time * 0.01) * 0.04;
+    const activeSignalIntensities = signalPropagator.update(delta);
+    const instanceColors = meshRef.current.instanceColor;
+
+    for (let i = 0; i < count; i++) {
+      const ix = initialPositions[i * 3];
+      const iy = initialPositions[i * 3 + 1];
+      const iz = initialPositions[i * 3 + 2];
+
+      // Mouse Force Field Calculation
+      const dx = ix - currentPointerWorld.current.x;
+      const dy = iy - currentPointerWorld.current.y;
+      const distSq = dx * dx + dy * dy;
+
+      let targetX = ix;
+      let targetY = iy;
+      let targetZ = iz;
+      let currentScale = scales[i];
+
+      if (distSq < interactionRadius * interactionRadius) {
+        const dist = Math.sqrt(distSq);
+        const factor = (1.0 - dist / interactionRadius);
+
+        // Attraction / displacement force vector
+        targetX += (dx / dist) * factor * attractionStrength;
+        targetY += (dy / dist) * factor * attractionStrength;
+        currentScale *= (1.0 + factor * 0.8); // Hovered state brightening/scale increase
+      }
+
+      // Smooth Position Interpolation
+      currentPositions[i * 3] = THREE.MathUtils.damp(currentPositions[i * 3], targetX, 6, delta);
+      currentPositions[i * 3 + 1] = THREE.MathUtils.damp(currentPositions[i * 3 + 1], targetY, 6, delta);
+      currentPositions[i * 3 + 2] = THREE.MathUtils.damp(currentPositions[i * 3 + 2], targetZ, 6, delta);
+
+      dummy.position.set(currentPositions[i * 3], currentPositions[i * 3 + 1], currentPositions[i * 3 + 2]);
+      dummy.scale.setScalar(currentScale);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+
+      // Signal Propagation Impulse Color Flash
+      if (instanceColors && activeSignalIntensities.has(i)) {
+        const intensity = activeSignalIntensities.get(i)!;
+        instanceColors.setXYZ(i, 1.0 * intensity + baseColors[i * 3] * (1 - intensity), 1.0 * intensity + baseColors[i * 3 + 1] * (1 - intensity), 1.0);
+      } else if (instanceColors) {
+        instanceColors.setXYZ(i, baseColors[i * 3], baseColors[i * 3 + 1], baseColors[i * 3 + 2]);
+      }
+    }
+
+    meshRef.current.instanceMatrix.needsUpdate = true;
+    if (instanceColors) instanceColors.needsUpdate = true;
+
+    meshRef.current.rotation.y = state.clock.elapsedTime * 0.025;
+    meshRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.01) * 0.04;
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+    <instancedMesh
+      ref={meshRef}
+      args={[undefined, undefined, count]}
+      onPointerDown={handlePointerDown}
+    >
       <sphereGeometry args={[1, 6, 6]} />
-      <meshBasicMaterial transparent opacity={0.7} blending={THREE.AdditiveBlending} />
+      <meshBasicMaterial transparent opacity={0.75} blending={THREE.AdditiveBlending} />
     </instancedMesh>
   );
 }
