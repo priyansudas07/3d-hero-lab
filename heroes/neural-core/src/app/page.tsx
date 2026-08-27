@@ -1,14 +1,15 @@
-import { NeuralCoreCanvas } from '@/components/NeuralCore/NeuralCoreCanvas';
+import { PhysicsPlaygroundCanvas } from '@/components/PhysicsPlayground/PhysicsPlaygroundCanvas';
 
 export default function Home() {
   return (
     <main className="w-full min-h-screen bg-[#030308]">
-      <NeuralCoreCanvas
-        nodeCount={3500}
-        interactionRadius={2.5}
-        attractionStrength={0.25}
-        primaryColor="#00F0FF"
-        secondaryColor="#A040FF"
+      <PhysicsPlaygroundCanvas
+        particleCount={12000}
+        initialMode="ATTRACT"
+        gravityStrength={0.5}
+        forceStrength={3.0}
+        damping={0.95}
+        color="#00F0FF"
         backgroundColor="#030308"
       />
     </main>
