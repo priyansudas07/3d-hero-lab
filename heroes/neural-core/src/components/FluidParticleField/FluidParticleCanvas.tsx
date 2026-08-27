@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { FluidParticleRenderer } from './FluidParticleRenderer';
+import { CoreMesh } from '../NeuralCore/CoreMesh';
 
 export interface FluidParticleFieldProps {
   particleCount?: number;
@@ -14,6 +15,7 @@ export interface FluidParticleFieldProps {
   turbulence?: number;
   color?: string;
   backgroundColor?: string;
+  showCore?: boolean;
   className?: string;
 }
 
@@ -26,6 +28,7 @@ export function FluidParticleCanvas({
   turbulence = 0.4,
   color = '#00F0FF',
   backgroundColor = '#030308',
+  showCore = true,
   className = '',
 }: FluidParticleFieldProps) {
   const [mounted, setMounted] = useState(false);
@@ -57,7 +60,17 @@ export function FluidParticleCanvas({
           gl={{ antialias: true, alpha: true }}
         >
           <color attach="background" args={[backgroundColor]} />
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[10, 10, 5]} intensity={1.8} color={color} />
           
+          {/* Central Core Focal Point */}
+          {showCore && (
+            <CoreMesh
+              primaryColor={color}
+              secondaryColor="#A040FF"
+            />
+          )}
+
           {/* Component #2: Fluid Particle Field */}
           <FluidParticleRenderer
             count={particleCount}
