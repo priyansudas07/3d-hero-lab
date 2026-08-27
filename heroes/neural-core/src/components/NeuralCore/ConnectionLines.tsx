@@ -28,26 +28,26 @@ const fragmentShader = `
   varying float vProgress;
 
   void main() {
-    // Wave pulse moving along line segment progress
-    float pulse = sin((vProgress * 10.0) - (uTime * 3.0)) * 0.5 + 0.5;
-    pulse = pow(pulse, 4.0); // Sharpen wave pulse peak
+    // Sharpen wave pulse peak along connection vector
+    float pulse = sin((vProgress * 12.0) - (uTime * 2.5)) * 0.5 + 0.5;
+    pulse = pow(pulse, 6.0);
 
-    vec3 finalColor = mix(uColor * 0.3, uColor * 1.5, pulse);
-    float alpha = mix(0.15, 0.75, pulse);
+    // Inactive baseline line opacity: subtle 0.06; active pulse: 0.65
+    vec3 finalColor = mix(uColor * 0.2, uColor * 1.8, pulse);
+    float alpha = mix(0.06, 0.65, pulse);
 
     gl_FragColor = vec4(finalColor, alpha);
   }
 `;
 
 export function ConnectionLines({
-  nodeCount = 300,
-  maxConnections = 450,
-  maxDistance = 2.2,
-  color = '#7000FF',
+  nodeCount = 250,
+  maxConnections = 300,
+  maxDistance = 1.8,
+  color = '#A040FF',
 }: ConnectionLinesProps) {
   const lineRef = useRef<THREE.LineSegments>(null);
 
-  // Compute node positions and line pairs based on spatial proximity
   const { lineGeometry, uniforms } = useMemo(() => {
     const nodes: THREE.Vector3[] = [];
     for (let i = 0; i < nodeCount; i++) {
@@ -55,7 +55,7 @@ export function ConnectionLines({
       const v = Math.random();
       const theta = u * 2.0 * Math.PI;
       const phi = Math.acos(2.0 * v - 1.0);
-      const r = 2.2 + Math.cbrt(Math.random()) * 3.5;
+      const r = 3.2 + Math.cbrt(Math.random()) * 3.2;
 
       nodes.push(
         new THREE.Vector3(
@@ -102,8 +102,8 @@ export function ConnectionLines({
     if (lineRef.current) {
       (lineRef.current.material as THREE.ShaderMaterial).uniforms.uTime.value =
         state.clock.elapsedTime;
-      lineRef.current.rotation.y = state.clock.elapsedTime * 0.05;
-      lineRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.03) * 0.1;
+      lineRef.current.rotation.y = state.clock.elapsedTime * 0.03;
+      lineRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.015) * 0.05;
     }
   });
 
@@ -114,6 +114,7 @@ export function ConnectionLines({
         fragmentShader={fragmentShader}
         uniforms={uniforms}
         transparent
+        blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
     </lineSegments>

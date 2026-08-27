@@ -12,8 +12,8 @@ interface SynapticNodesProps {
 }
 
 export function SynapticNodes({
-  count = 5000,
-  radius = 6.2,
+  count = 2500,
+  radius = 6.5,
   primaryColor = '#00F0FF',
   secondaryColor = '#A040FF',
 }: SynapticNodesProps) {
@@ -33,7 +33,9 @@ export function SynapticNodes({
       const v = Math.random();
       const theta = u * 2.0 * Math.PI;
       const phi = Math.acos(2.0 * v - 1.0);
-      const r = 2.2 + Math.cbrt(Math.random()) * (radius - 2.2);
+      
+      // Increased clearance radius around core: 3.2 to 6.5
+      const r = 3.2 + Math.cbrt(Math.random()) * (radius - 3.2);
 
       const x = r * Math.sin(phi) * Math.cos(theta);
       const y = r * Math.sin(phi) * Math.sin(theta);
@@ -43,7 +45,8 @@ export function SynapticNodes({
       pos[i * 3 + 1] = y;
       pos[i * 3 + 2] = z;
 
-      scales[i] = 0.4 + Math.random() * 0.7;
+      // Precision tiny node scaling (0.012 to 0.025)
+      scales[i] = 0.012 + Math.pow(Math.random(), 3.0) * 0.018;
 
       const mixRatio = Math.random();
       const nodeColor = c1.clone().lerp(c2, mixRatio);
@@ -63,7 +66,7 @@ export function SynapticNodes({
 
     for (let i = 0; i < count; i++) {
       dummy.position.set(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
-      dummy.scale.setScalar(randomScales[i] * 0.045);
+      dummy.scale.setScalar(randomScales[i]);
       dummy.updateMatrix();
       meshRef.current.setMatrixAt(i, dummy.matrix);
     }
@@ -76,14 +79,14 @@ export function SynapticNodes({
   useFrame((state) => {
     if (!meshRef.current) return;
     const time = state.clock.elapsedTime;
-    meshRef.current.rotation.y = time * 0.04;
-    meshRef.current.rotation.x = Math.sin(time * 0.02) * 0.08;
+    meshRef.current.rotation.y = time * 0.03;
+    meshRef.current.rotation.x = Math.sin(time * 0.015) * 0.05;
   });
 
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
       <sphereGeometry args={[1, 6, 6]} />
-      <meshBasicMaterial transparent opacity={0.9} />
+      <meshBasicMaterial transparent opacity={0.65} blending={THREE.AdditiveBlending} />
     </instancedMesh>
   );
 }

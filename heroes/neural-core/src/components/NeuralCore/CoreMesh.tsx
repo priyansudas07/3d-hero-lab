@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
+import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -19,35 +19,35 @@ export function CoreMesh({
   const innerCoreRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const time = state.clock.elapsedTime;
     
     if (outerWireRef.current) {
-      outerWireRef.current.rotation.y = time * 0.2 * rotationSpeed;
-      outerWireRef.current.rotation.x = Math.sin(time * 0.1) * 0.2;
+      outerWireRef.current.rotation.y = time * 0.18 * rotationSpeed;
+      outerWireRef.current.rotation.x = Math.sin(time * 0.08) * 0.15;
     }
 
     if (innerCoreRef.current) {
-      innerCoreRef.current.rotation.y = -time * 0.4 * rotationSpeed;
-      const pulse = 1.0 + Math.sin(time * 3.0) * 0.08;
+      innerCoreRef.current.rotation.y = -time * 0.35 * rotationSpeed;
+      const pulse = 1.0 + Math.sin(time * 2.5) * 0.06;
       innerCoreRef.current.scale.set(pulse, pulse, pulse);
     }
 
     if (glowRef.current) {
-      const glowPulse = 1.0 + Math.sin(time * 2.5) * 0.15;
+      const glowPulse = 1.0 + Math.sin(time * 2.0) * 0.12;
       glowRef.current.scale.set(glowPulse, glowPulse, glowPulse);
     }
   });
 
   return (
-    <group>
+    <group scale={[1.15, 1.15, 1.15]}>
       {/* Outer Geodesic Wireframe Shell */}
       <mesh ref={outerWireRef}>
-        <icosahedronGeometry args={[1.5, 2]} />
+        <icosahedronGeometry args={[1.6, 2]} />
         <meshStandardMaterial
           color="#00F0FF"
           emissive="#00F0FF"
-          emissiveIntensity={0.6}
+          emissiveIntensity={1.4}
           wireframe
           metalness={0.9}
           roughness={0.1}
@@ -56,11 +56,11 @@ export function CoreMesh({
 
       {/* Inner Nested Polyhedron Shell */}
       <mesh ref={innerCoreRef}>
-        <dodecahedronGeometry args={[0.9, 1]} />
+        <dodecahedronGeometry args={[0.95, 1]} />
         <meshStandardMaterial
           color="#A040FF"
           emissive="#A040FF"
-          emissiveIntensity={1.2}
+          emissiveIntensity={1.8}
           wireframe
           metalness={0.95}
           roughness={0.05}
@@ -69,11 +69,11 @@ export function CoreMesh({
 
       {/* Central Singularity Glow Core */}
       <mesh ref={glowRef}>
-        <sphereGeometry args={[0.45, 32, 32]} />
+        <sphereGeometry args={[0.48, 32, 32]} />
         <meshBasicMaterial
           color="#FFFFFF"
           transparent
-          opacity={0.95}
+          opacity={0.98}
         />
       </mesh>
     </group>
