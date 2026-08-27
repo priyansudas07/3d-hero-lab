@@ -18,17 +18,26 @@ export function CoreMesh({
   const outerWireRef = useRef<THREE.Mesh>(null);
   const innerCoreRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
+  
+  const currentPointer = useRef(new THREE.Vector2(0, 0));
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const time = state.clock.elapsedTime;
     
+    // Smooth dampening mouse tilt target
+    const targetX = state.pointer.x * 0.35;
+    const targetY = state.pointer.y * 0.35;
+
+    currentPointer.current.x = THREE.MathUtils.damp(currentPointer.current.x, targetX, 4, delta);
+    currentPointer.current.y = THREE.MathUtils.damp(currentPointer.current.y, targetY, 4, delta);
+
     if (outerWireRef.current) {
-      outerWireRef.current.rotation.y = time * 0.18 * rotationSpeed;
-      outerWireRef.current.rotation.x = Math.sin(time * 0.08) * 0.15;
+      outerWireRef.current.rotation.y = time * 0.18 * rotationSpeed + currentPointer.current.x;
+      outerWireRef.current.rotation.x = Math.sin(time * 0.08) * 0.15 - currentPointer.current.y;
     }
 
     if (innerCoreRef.current) {
-      innerCoreRef.current.rotation.y = -time * 0.35 * rotationSpeed;
+      innerCoreRef.current.rotation.y = -time * 0.35 * rotationSpeed - currentPointer.current.x * 0.5;
       const pulse = 1.0 + Math.sin(time * 2.5) * 0.06;
       innerCoreRef.current.scale.set(pulse, pulse, pulse);
     }

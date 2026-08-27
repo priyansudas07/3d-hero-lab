@@ -13,12 +13,16 @@ interface ConnectionLinesProps {
 
 const vertexShader = `
   uniform float uTime;
+  uniform vec2 uPointer;
   attribute float aProgress;
   varying float vProgress;
+  varying float vPointerDist;
 
   void main() {
     vProgress = aProgress;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    vPointerDist = distance(worldPosition.xy, uPointer * 5.0);
+    gl_Position = projectionMatrix * viewMatrix * worldPosition;
   }
 `;
 
@@ -26,14 +30,18 @@ const fragmentShader = `
   uniform float uTime;
   uniform vec3 uColor;
   varying float vProgress;
+  varying float vPointerDist;
 
   void main() {
-    // Pulse waves moving along axon paths
+    // Wave pulse
     float pulse = sin((vProgress * 10.0) - (uTime * 2.0)) * 0.5 + 0.5;
     pulse = pow(pulse, 5.0);
 
-    vec3 finalColor = mix(uColor * 0.2, uColor * 1.5, pulse);
-    float alpha = mix(0.04, 0.55, pulse);
+    // Cursor proximity flare within 3.0 units radius
+    float cursorFlare = smoothstep(3.5, 0.5, vPointerDist);
+
+    vec3 finalColor = mix(uColor * 0.2, uColor * (1.5 + cursorFlare * 1.5), pulse + cursorFlare * 0.4);
+    float alpha = mix(0.04, 0.7, pulse + cursorFlare * 0.3);
 
     gl_FragColor = vec4(finalColor, alpha);
   }
@@ -46,8 +54,8 @@ export function ConnectionLines({
   color = '#A040FF',
 }: ConnectionLinesProps) {
   const lineRef = useRef<THREE.LineSegments>(null);
+  const currentPointer = useRef(new THREE.Vector2(0, 0));
 
-  // Generate line connections along axon branch structures
   const { lineGeometry, uniforms } = useMemo(() => {
     const nodes: THREE.Vector3[] = [];
     const numAxons = 6;
@@ -102,16 +110,23 @@ export function ConnectionLines({
 
     const shaderUniforms = {
       uTime: { value: 0 },
+      uPointer: { value: new THREE.Vector2(0, 0) },
       uColor: { value: new THREE.Color(color) },
     };
 
     return { lineGeometry: geometry, uniforms: shaderUniforms };
   }, [nodeCount, maxConnections, maxDistance, color]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (lineRef.current) {
-      (lineRef.current.material as THREE.ShaderMaterial).uniforms.uTime.value =
-        state.clock.elapsedTime;
+      const mat = lineRef.current.material as THREE.ShaderMaterial;
+      mat.uniforms.uTime.value = state.clock.elapsedTime;
+
+      // Dampened cursor position for smooth GLSL flare
+      currentPointer.current.x = THREE.MathUtils.damp(currentPointer.current.x, state.pointer.x, 5, delta);
+      currentPointer.current.y = THREE.MathUtils.damp(currentPointer.current.y, state.pointer.y, 5, delta);
+      mat.uniforms.uPointer.value.copy(currentPointer.current);
+
       lineRef.current.rotation.y = state.clock.elapsedTime * 0.025;
       lineRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.01) * 0.04;
     }

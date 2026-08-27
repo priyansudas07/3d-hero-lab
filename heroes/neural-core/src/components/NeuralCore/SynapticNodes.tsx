@@ -16,20 +16,18 @@ export function SynapticNodes({
   secondaryColor = '#A040FF',
 }: SynapticNodesProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
+  const currentPointerWorld = useRef(new THREE.Vector3(0, 0, 0));
 
-  // Generate organic neural distribution: Core Cluster + 6 Axon Branches + Deep Background
-  const { positions, randomScales, dummy, colors, speeds } = useMemo(() => {
+  const { positions, randomScales, dummy, colors } = useMemo(() => {
     const pos = new Float32Array(count * 3);
     const scales = new Float32Array(count);
     const cols = new Float32Array(count * 3);
-    const spds = new Float32Array(count);
     const tempDummy = new THREE.Object3D();
 
     const c1 = new THREE.Color(primaryColor);
     const c2 = new THREE.Color(secondaryColor);
     const cDeep = new THREE.Color('#301050');
 
-    // 6 Main Axon Branch vectors
     const numAxons = 6;
     const axonAngles = Array.from({ length: numAxons }, (_, i) => (i / numAxons) * Math.PI * 2.0);
 
@@ -41,7 +39,6 @@ export function SynapticNodes({
       const pType = Math.random();
 
       if (pType < 0.25) {
-        // 1. Central Processing Core Cluster (25% of nodes)
         const r = 0.8 + Math.cbrt(Math.random()) * 1.5;
         const theta = Math.random() * Math.PI * 2.0;
         const phi = Math.acos(2.0 * Math.random() - 1.0);
@@ -53,12 +50,10 @@ export function SynapticNodes({
         scale = 0.018 + Math.random() * 0.02;
         nodeColor = c1.clone().lerp(c2, Math.random() * 0.4);
       } else if (pType < 0.75) {
-        // 2. Axon Pathways / Organic Branches (50% of nodes)
         const axonIdx = Math.floor(Math.random() * numAxons);
         const baseAngle = axonAngles[axonIdx];
         const distAlongAxon = 1.5 + Math.pow(Math.random(), 1.5) * 5.5;
 
-        // Spiral dispersion around axon path
         const spiralAngle = distAlongAxon * 1.2 + Math.random() * 0.5;
         const dispersionRadius = 0.2 + (distAlongAxon * 0.15) * Math.random();
 
@@ -69,12 +64,11 @@ export function SynapticNodes({
         scale = 0.012 + Math.random() * 0.015;
         nodeColor = c1.clone().lerp(c2, distAlongAxon / 7.0);
       } else {
-        // 3. Deep Cinematic Depth Background / Foreground Layer (25% of nodes)
         x = (Math.random() - 0.5) * 16.0;
         y = (Math.random() - 0.5) * 12.0;
-        z = -10.0 + Math.random() * 14.0; // Stratified depth Z from -10 to +4
+        z = -10.0 + Math.random() * 14.0;
 
-        scale = (z > 2.0) ? 0.025 : 0.01; // Foreground nodes slightly larger, background tiny
+        scale = (z > 2.0) ? 0.025 : 0.01;
         nodeColor = (z < -4.0) ? cDeep : c2;
       }
 
@@ -83,14 +77,13 @@ export function SynapticNodes({
       pos[i * 3 + 2] = z;
 
       scales[i] = scale;
-      spds[i] = 0.2 + Math.random() * 0.8;
 
       cols[i * 3] = nodeColor.r;
       cols[i * 3 + 1] = nodeColor.g;
       cols[i * 3 + 2] = nodeColor.b;
     }
 
-    return { positions: pos, randomScales: scales, dummy: tempDummy, colors: cols, speeds: spds };
+    return { positions: pos, randomScales: scales, dummy: tempDummy, colors: cols };
   }, [count, primaryColor, secondaryColor]);
 
   useEffect(() => {
@@ -111,11 +104,18 @@ export function SynapticNodes({
     }
   }, [count, positions, randomScales, dummy, colors]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (!meshRef.current) return;
     const time = state.clock.elapsedTime;
-    
-    // Calm organic rotation around Y axis
+
+    // Convert pointer state (-1 to +1) to 3D world target space
+    const targetWorldX = state.pointer.x * 6.0;
+    const targetWorldY = state.pointer.y * 4.0;
+
+    currentPointerWorld.current.x = THREE.MathUtils.damp(currentPointerWorld.current.x, targetWorldX, 5, delta);
+    currentPointerWorld.current.y = THREE.MathUtils.damp(currentPointerWorld.current.y, targetWorldY, 5, delta);
+
+    // Calm ambient background rotation
     meshRef.current.rotation.y = time * 0.025;
     meshRef.current.rotation.x = Math.sin(time * 0.01) * 0.04;
   });
