@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Mouse, Activity } from 'lucide-react';
+import { Mouse, Activity, ArrowRight, FileText } from 'lucide-react';
 
 export interface PortfolioSection {
   id: string;
@@ -22,6 +22,8 @@ interface HeroOverlayProps {
   activeSectionId?: string;
   onSectionSelect?: (id: string) => void;
   nodeCount?: number;
+  onExploreClick?: () => void;
+  onResumeClick?: () => void;
 }
 
 export function HeroOverlay({
@@ -29,6 +31,8 @@ export function HeroOverlay({
   activeSectionId = 'core',
   onSectionSelect,
   nodeCount = 3500,
+  onExploreClick,
+  onResumeClick,
 }: HeroOverlayProps) {
   const [active, setActive] = useState(activeSectionId);
 
@@ -45,7 +49,7 @@ export function HeroOverlay({
       {/* Subtle Animated Scanning Line */}
       <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-[#00F0FF]/30 to-transparent animate-[scan_8s_ease-in-out_infinite] opacity-40 pointer-events-none" />
 
-      {/* 1. TOP BAR: System Status & Contextual Telemetry */}
+      {/* 1. TOP BAR: System Status & Telemetry */}
       <div className="relative z-20 flex justify-between items-start">
         {/* Top Left: System Status */}
         <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg border border-cyan-500/20 bg-slate-950/40 backdrop-blur-md">
@@ -71,10 +75,10 @@ export function HeroOverlay({
         </div>
       </div>
 
-      {/* 2. MIDDLE AREA: Left Section Navigation & Center Hero Space */}
-      <div className="relative z-20 flex justify-between items-center my-auto">
-        {/* Left Section Navigation Indicator */}
-        <div className="hidden md:flex flex-col gap-3 pointer-events-auto">
+      {/* 2. MAIN HERO CONTENT AREA */}
+      <div className="relative z-20 my-auto flex items-center justify-between w-full max-w-7xl mx-auto">
+        {/* Left Navigation Indicator */}
+        <div className="hidden lg:flex flex-col gap-3 pointer-events-auto">
           <p className="text-[9px] uppercase tracking-widest text-slate-500 mb-1 pl-1">NAVIGATION</p>
           {sections.map((sec) => {
             const isActive = sec.id === active;
@@ -97,15 +101,53 @@ export function HeroOverlay({
           })}
         </div>
 
+        {/* CENTER PERSONAL HERO BLOCK */}
+        <div className="w-full max-w-2xl mx-auto text-center lg:text-left space-y-6 lg:pl-12">
+          {/* Positioning Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-cyan-950/30 text-cyan-400 text-[10px] md:text-xs font-semibold tracking-widest uppercase">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            CSE • AI/ML • SOFTWARE ENGINEERING
+          </div>
+
+          {/* Primary Name */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white drop-shadow-[0_0_35px_rgba(0,240,255,0.3)]">
+            PRIYANSU DAS
+          </h1>
+
+          {/* Short Statement */}
+          <p className="text-sm md:text-base text-slate-400 font-light leading-relaxed max-w-xl mx-auto lg:mx-0">
+            Architecting intelligent software, high-performance WebGL systems, and end-to-end AI-driven applications.
+          </p>
+
+          {/* Primary & Secondary Action CTAs */}
+          <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 pointer-events-auto">
+            <button
+              onClick={onExploreClick}
+              className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[#00F0FF] to-[#7000FF] text-black font-bold tracking-wide hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <span>EXPLORE PROJECTS</span>
+              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </button>
+
+            <button
+              onClick={onResumeClick}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-700/80 bg-slate-950/60 text-slate-300 font-semibold tracking-wide hover:border-cyan-400/50 hover:text-white transition-all duration-300"
+            >
+              <FileText className="w-4 h-4 text-cyan-400" />
+              <span>VIEW RESUME</span>
+            </button>
+          </div>
+        </div>
+
         {/* Right Corner Coordinates (Desktop Only) */}
-        <div className="hidden md:flex flex-col text-right text-[9px] text-slate-500 space-y-1">
-          <p>SYS_VER: 3.2.0</p>
-          <p>FRAME_BUFFER: WebGL2</p>
-          <p>DISPATCH: INSTANCED</p>
+        <div className="hidden lg:flex flex-col text-right text-[9px] text-slate-500 space-y-1">
+          <p>AUTHOR: PRIYANSU DAS</p>
+          <p>ROLE: FULL-STACK / AI</p>
+          <p>ENGINE: WEBGL2 / R3F</p>
         </div>
       </div>
 
-      {/* 3. BOTTOM BAR: Interactive Guidance & Mobile Section Indicator */}
+      {/* 3. BOTTOM BAR: Guidance & Mobile Section Indicator */}
       <div className="relative z-20 flex justify-between items-end">
         {/* Bottom Left Mouse Interaction Indicator */}
         <div className="flex items-center gap-3 p-2.5 md:p-3 rounded-xl border border-slate-800/80 bg-slate-950/60 backdrop-blur-md pointer-events-auto">
@@ -117,7 +159,7 @@ export function HeroOverlay({
         </div>
 
         {/* Bottom Right Mobile Section Indicator */}
-        <div className="md:hidden text-right text-[10px] font-bold text-cyan-400 px-3 py-1 rounded-md border border-cyan-500/20 bg-slate-950/60">
+        <div className="lg:hidden text-right text-[10px] font-bold text-cyan-400 px-3 py-1 rounded-md border border-cyan-500/20 bg-slate-950/60">
           01 / CORE
         </div>
       </div>
