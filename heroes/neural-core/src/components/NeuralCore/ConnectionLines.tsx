@@ -11,79 +11,135 @@ import {
 
 import * as THREE from 'three';
 
-import {
+import type {
   SynapticNetworkRef,
-} from '../../core/3d/synaptic/SynapticNetwork';
+} from './SynapticNodes';
+
+
+/* =========================================================
+   PROPS
+   ========================================================= */
 
 interface ConnectionLinesProps {
-  networkRef: SynapticNetworkRef;
-  color?: string;
+
+  networkRef:
+    SynapticNetworkRef;
+
+  color?:
+    string;
+
 }
 
+
+/* =========================================================
+   VERTEX SHADER
+   ========================================================= */
+
 const vertexShader = `
-  uniform float uTime;
 
-  attribute float aProgress;
+  attribute float aSignal;
 
-  varying float vProgress;
+  varying float vSignal;
 
   void main() {
 
-    vProgress = aProgress;
+    vSignal =
+      aSignal;
 
     vec4 worldPosition =
       modelMatrix *
-      vec4(position, 1.0);
+      vec4(
+        position,
+        1.0
+      );
 
     gl_Position =
       projectionMatrix *
       viewMatrix *
       worldPosition;
+
   }
+
 `;
 
+
+/* =========================================================
+   FRAGMENT SHADER
+   ========================================================= */
+
 const fragmentShader = `
+
   uniform float uTime;
+
   uniform vec3 uColor;
 
-  varying float vProgress;
+  varying float vSignal;
+
 
   void main() {
 
     /*
-     * Continuous traveling pulse.
+     * Base network visibility.
      */
 
-    float wave =
+    float base =
+      0.16;
+
+
+    /*
+     * Signal traveling through the network.
+     */
+
+    float pulse =
       sin(
-        vProgress * 12.0 -
-        uTime * 2.0
+        uTime * 4.0
+      ) *
+      0.5 +
+      0.5;
+
+
+    float signal =
+      vSignal *
+      (
+        0.65 +
+        pulse * 0.35
       );
 
-    wave =
-      wave * 0.5 + 0.5;
 
-    wave =
-      pow(wave, 7.0);
+    /*
+     * Signal becomes significantly brighter
+     * than the inactive network.
+     */
 
     float intensity =
-      0.10 +
-      wave * 0.55;
+      base +
+      signal * 2.2;
+
 
     vec3 finalColor =
-      uColor * intensity;
+      uColor *
+      intensity;
+
 
     float alpha =
-      0.08 +
-      wave * 0.30;
+      0.055 +
+      signal * 0.55;
+
 
     gl_FragColor =
       vec4(
         finalColor,
         alpha
       );
+
   }
+
 `;
+
+
+/* =========================================================
+   COMPONENT
+   ========================================================= */
 
 export function ConnectionLines({
   networkRef,
@@ -91,184 +147,314 @@ export function ConnectionLines({
 }: ConnectionLinesProps) {
 
   const lineRef =
-    useRef<THREE.LineSegments>(null);
+    useRef<THREE.LineSegments>(
+      null
+    );
+
 
   /*
-   * Maximum number of edges.
+   * Hard GPU safety limit.
    *
-   * This prevents accidental
-   * massive GPU buffers.
+   * The graph itself is much smaller because every node
+   * has a limited degree.
    */
 
-  const MAX_EDGES = 5000;
+  const MAX_EDGES =
+    2500;
 
-  const geometry = useMemo(() => {
 
-    const positions =
-      new Float32Array(
-        MAX_EDGES * 6
+  /* =======================================================
+     GEOMETRY
+     ======================================================= */
+
+  const geometry =
+    useMemo(() => {
+
+      const positions =
+        new Float32Array(
+          MAX_EDGES * 2 * 3
+        );
+
+
+      const signal =
+        new Float32Array(
+          MAX_EDGES * 2
+        );
+
+
+      const geo =
+        new THREE.BufferGeometry();
+
+
+      geo.setAttribute(
+        'position',
+
+        new THREE.BufferAttribute(
+          positions,
+          3
+        )
       );
 
-    const progress =
-      new Float32Array(
-        MAX_EDGES * 2
+
+      geo.setAttribute(
+        'aSignal',
+
+        new THREE.BufferAttribute(
+          signal,
+          1
+        )
       );
 
-    /*
-     * Each edge has:
-     *
-     * endpoint A = 0
-     * endpoint B = 1
-     */
 
-    for (
-      let i = 0;
-      i < MAX_EDGES;
-      i++
-    ) {
+      geo.setDrawRange(
+        0,
+        0
+      );
 
-      progress[i * 2] = 0;
-      progress[i * 2 + 1] = 1;
+
+      return geo;
+
+    }, []);
+
+
+  /* =======================================================
+     UNIFORMS
+     ======================================================= */
+
+  const uniforms =
+    useMemo(
+      () => ({
+
+        uTime: {
+          value: 0,
+        },
+
+        uColor: {
+          value:
+            new THREE.Color(
+              color
+            ),
+        },
+
+      }),
+      [color]
+    );
+
+
+  /* =======================================================
+     FRAME LOOP
+     ======================================================= */
+
+  useFrame(
+    (state) => {
+
+      const line =
+        lineRef.current;
+
+
+      if (!line) {
+        return;
+      }
+
+
+      const network =
+        networkRef.current;
+
+
+      if (
+        !network.positions ||
+        network.edges.length === 0
+      ) {
+
+        geometry.setDrawRange(
+          0,
+          0
+        );
+
+        return;
+
+      }
+
+
+      const positionAttribute =
+        geometry.getAttribute(
+          'position'
+        ) as THREE.BufferAttribute;
+
+
+      const signalAttribute =
+        geometry.getAttribute(
+          'aSignal'
+        ) as THREE.BufferAttribute;
+
+
+      const positions =
+        network.positions;
+
+
+      const edges =
+        network.edges;
+
+
+      const signals =
+        network.signalIntensities;
+
+
+      const edgeCount =
+        Math.min(
+          edges.length,
+          MAX_EDGES
+        );
+
+
+      /* ===================================================
+         UPDATE EDGE POSITIONS
+         =================================================== */
+
+      for (
+        let i = 0;
+        i < edgeCount;
+        i++
+      ) {
+
+        const [
+          a,
+          b,
+        ] =
+          edges[i];
+
+
+        const aIndex =
+          a * 3;
+
+
+        const bIndex =
+          b * 3;
+
+
+        const vertexA =
+          i * 2;
+
+
+        const vertexB =
+          vertexA + 1;
+
+
+        /* -------------------------------------------------
+           Endpoint A
+           ------------------------------------------------- */
+
+        positionAttribute.setXYZ(
+          vertexA,
+
+          positions[aIndex],
+
+          positions[aIndex + 1],
+
+          positions[aIndex + 2]
+        );
+
+
+        /* -------------------------------------------------
+           Endpoint B
+           ------------------------------------------------- */
+
+        positionAttribute.setXYZ(
+          vertexB,
+
+          positions[bIndex],
+
+          positions[bIndex + 1],
+
+          positions[bIndex + 2]
+        );
+
+
+        /* =================================================
+           SIGNAL INTENSITY
+
+           Signal can travel through a connection if either
+           endpoint is active.
+           ================================================= */
+
+        const signalA =
+          signals.get(a) ??
+          0;
+
+
+        const signalB =
+          signals.get(b) ??
+          0;
+
+
+        signalAttribute.setX(
+          vertexA,
+          signalA
+        );
+
+
+        signalAttribute.setX(
+          vertexB,
+          signalB
+        );
+
+      }
+
+
+      positionAttribute.needsUpdate =
+        true;
+
+
+      signalAttribute.needsUpdate =
+        true;
+
+
+      geometry.setDrawRange(
+        0,
+        edgeCount * 2
+      );
+
+
+      /* ===================================================
+         SHADER TIME
+         =================================================== */
+
+      const material =
+        line.material as THREE.ShaderMaterial;
+
+
+      material.uniforms
+        .uTime
+        .value =
+        state.clock.elapsedTime;
+
+
+      /* ===================================================
+         COLOR
+         =================================================== */
+
+      material.uniforms
+        .uColor
+        .value
+        .set(color);
+
     }
+  );
 
-    const geo =
-      new THREE.BufferGeometry();
 
-    geo.setAttribute(
-      'position',
-      new THREE.BufferAttribute(
-        positions,
-        3
-      )
-    );
-
-    geo.setAttribute(
-      'aProgress',
-      new THREE.BufferAttribute(
-        progress,
-        1
-      )
-    );
-
-    geo.setDrawRange(
-      0,
-      0
-    );
-
-    return geo;
-
-  }, []);
-
-  const uniforms = useMemo(() => ({
-    uTime: {
-      value: 0,
-    },
-
-    uColor: {
-      value: new THREE.Color(
-        color
-      ),
-    },
-  }), [color]);
-
-  useFrame((state) => {
-
-    const line =
-      lineRef.current;
-
-    if (!line) return;
-
-    const network =
-      networkRef.current;
-
-    if (
-      !network.positions ||
-      network.edges.length === 0
-    ) {
-      return;
-    }
-
-    const positionAttribute =
-      geometry.getAttribute(
-        'position'
-      ) as THREE.BufferAttribute;
-
-    const positions =
-      network.positions;
-
-    const edges =
-      network.edges;
-
-    const edgeCount =
-      Math.min(
-        edges.length,
-        MAX_EDGES
-      );
-
-    /*
-     * Update line endpoints
-     * using the ACTUAL node positions.
-     */
-
-    for (
-      let i = 0;
-      i < edgeCount;
-      i++
-    ) {
-
-      const [
-        a,
-        b,
-      ] = edges[i];
-
-      const aIndex =
-        a * 3;
-
-      const bIndex =
-        b * 3;
-
-      positionAttribute.setXYZ(
-        i * 2,
-        positions[aIndex],
-        positions[aIndex + 1],
-        positions[aIndex + 2]
-      );
-
-      positionAttribute.setXYZ(
-        i * 2 + 1,
-        positions[bIndex],
-        positions[bIndex + 1],
-        positions[bIndex + 2]
-      );
-    }
-
-    positionAttribute.needsUpdate =
-      true;
-
-    geometry.setDrawRange(
-      0,
-      edgeCount * 2
-    );
-
-    /*
-     * Shader animation.
-     */
-
-    const material =
-      line.material as THREE.ShaderMaterial;
-
-    material.uniforms.uTime.value =
-      state.clock.elapsedTime;
-
-  });
+  /* =======================================================
+     RENDER
+     ======================================================= */
 
   return (
+
     <lineSegments
       ref={lineRef}
       geometry={geometry}
     >
 
       <shaderMaterial
+
         vertexShader={
           vertexShader
         }
@@ -282,13 +468,19 @@ export function ConnectionLines({
         }
 
         transparent
+
         blending={
           THREE.AdditiveBlending
         }
 
-        depthWrite={false}
+        depthWrite={
+          false
+        }
+
       />
 
     </lineSegments>
+
   );
+
 }
