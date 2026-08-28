@@ -42,43 +42,53 @@ import {
    ========================================================= */
 
 export interface SynapticNodeCloudProps {
+  nodeCount?: number;
 
-  nodeCount?:
-    number;
+  interactionRadius?: number;
 
-  interactionRadius?:
-    number;
+  attractionStrength?: number;
 
-  attractionStrength?:
-    number;
+  primaryColor?: string;
 
-  primaryColor?:
-    string;
+  secondaryColor?: string;
 
-  secondaryColor?:
-    string;
+  backgroundColor?: string;
 
-  backgroundColor?:
-    string;
-
-  className?:
-    string;
-
+  className?: string;
 }
 
 
 /* =========================================================
-   NEURAL SYSTEM (SHARED ANIMATED GROUP)
+   SHARED NEURAL SYSTEM
+   =========================================================
+
+   IMPORTANT:
+
+   This is now the ONLY component responsible for
+   global rotation of the neural structure.
+
+   CoreMesh
+   SynapticNodes
+   ConnectionLines
+
+   all live inside this same coordinate system.
    ========================================================= */
 
 interface NeuralSystemProps {
   nodeCount: number;
+
   interactionRadius: number;
+
   attractionStrength: number;
+
   primaryColor: string;
+
   secondaryColor: string;
-  networkRef: React.MutableRefObject<SynapticNetworkState>;
+
+  networkRef:
+    React.MutableRefObject<SynapticNetworkState>;
 }
+
 
 function NeuralSystem({
   nodeCount,
@@ -87,112 +97,175 @@ function NeuralSystem({
   primaryColor,
   secondaryColor,
   networkRef,
-}: {
-  nodeCount: number;
-  interactionRadius: number;
-  attractionStrength: number;
-  primaryColor: string;
-  secondaryColor: string;
-  networkRef: React.MutableRefObject<SynapticNetworkState>;
-}) {
-  const groupRef = useRef<THREE.Group>(null);
+}: NeuralSystemProps) {
 
-  const rotation = useRef(
-    new THREE.Vector3(0, 0, 0)
-  );
+  const groupRef =
+    useRef<THREE.Group>(null);
+
+  const targetRotation =
+    useRef(
+      new THREE.Vector3(0, 0, 0)
+    );
+
 
   useFrame((state, delta) => {
-    if (!groupRef.current) return;
 
-    const time = state.clock.elapsedTime;
+    const group =
+      groupRef.current;
 
-    /*
-     * Mouse controls the COMPLETE neural structure.
-     *
-     * X = vertical tilt
-     * Y = horizontal tilt
-     * Z = subtle banking
-     */
+    if (!group) {
+      return;
+    }
+
+
+    const time =
+      state.clock.elapsedTime;
+
+
+    /* =====================================================
+       MOUSE → 3D TILT
+       ===================================================== */
+
+    const mouseX =
+      state.pointer.x;
+
+    const mouseY =
+      state.pointer.y;
+
 
     const targetX =
-      state.pointer.y * 0.32;
+      mouseY * 0.30;
 
     const targetY =
-      state.pointer.x * 0.32;
+      mouseX * 0.30;
 
     const targetZ =
-      state.pointer.x * -0.08;
+      mouseX * -0.055;
 
-    rotation.current.x =
+
+    targetRotation.current.x =
       THREE.MathUtils.damp(
-        rotation.current.x,
+        targetRotation.current.x,
         targetX,
-        4,
+        4.0,
         delta
       );
 
-    rotation.current.y =
+    targetRotation.current.y =
       THREE.MathUtils.damp(
-        rotation.current.y,
+        targetRotation.current.y,
         targetY,
-        4,
+        4.0,
         delta
       );
 
-    rotation.current.z =
+    targetRotation.current.z =
       THREE.MathUtils.damp(
-        rotation.current.z,
+        targetRotation.current.z,
         targetZ,
-        4,
+        4.0,
         delta
       );
 
-    /*
-     * Autonomous 3D rotation.
-     *
-     * Both X and Y rotate continuously.
-     */
 
-    groupRef.current.rotation.x =
-      time * 0.055 +
-      rotation.current.x;
+    /* =====================================================
+       AUTONOMOUS 3D ROTATION
 
-    groupRef.current.rotation.y =
-      time * 0.12 +
-      rotation.current.y;
+       X + Y are deliberately both active.
 
-    groupRef.current.rotation.z =
-      Math.sin(time * 0.15) * 0.035 +
-      rotation.current.z;
+       This prevents the neural structure from appearing
+       like a flat horizontally rotating object.
+       ===================================================== */
+
+    group.rotation.x =
+      time * 0.045 +
+      targetRotation.current.x;
+
+    group.rotation.y =
+      time * 0.115 +
+      targetRotation.current.y;
+
+    group.rotation.z =
+      Math.sin(time * 0.14) * 0.025 +
+      targetRotation.current.z;
   });
 
+
   return (
-    <group ref={groupRef} scale={1.15}>
+    <group
+      ref={groupRef}
+      scale={1.15}
+    >
+
+      {/* =================================================
+          CENTRAL CORE
+          ================================================= */}
+
       <CoreMesh
-        primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
+        primaryColor={
+          primaryColor
+        }
+
+        secondaryColor={
+          secondaryColor
+        }
+
+        rotationSpeed={1}
       />
+
+
+      {/* =================================================
+          SYNAPTIC NODE CLOUD
+          ================================================= */}
 
       <SynapticNodes
-        count={nodeCount}
-        interactionRadius={interactionRadius}
-        attractionStrength={attractionStrength}
-        primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
-        networkRef={networkRef}
+        count={
+          nodeCount
+        }
+
+        interactionRadius={
+          interactionRadius
+        }
+
+        attractionStrength={
+          attractionStrength
+        }
+
+        primaryColor={
+          primaryColor
+        }
+
+        secondaryColor={
+          secondaryColor
+        }
+
+        networkRef={
+          networkRef
+        }
       />
 
+
+      {/* =================================================
+          CONNECTION NETWORK
+          ================================================= */}
+
       <ConnectionLines
-        networkRef={networkRef}
-        color={secondaryColor}
+        networkRef={
+          networkRef
+        }
+
+        color={
+          secondaryColor
+        }
       />
+
     </group>
   );
 }
 
 
 /* =========================================================
-   COMPONENT
+   MAIN CANVAS
    ========================================================= */
 
 export function NeuralCoreCanvas({
@@ -209,9 +282,7 @@ export function NeuralCoreCanvas({
   backgroundColor = '#030308',
 
   className = '',
-
 }: SynapticNodeCloudProps) {
-
 
   /* =======================================================
      CLIENT MOUNT
@@ -220,22 +291,16 @@ export function NeuralCoreCanvas({
   const [
     mounted,
     setMounted,
-  ] =
-    useState(false);
+  ] = useState(false);
 
 
   useEffect(() => {
-
     setMounted(true);
-
   }, []);
 
 
   /* =======================================================
-     SHARED NETWORK
-
-     SynapticNodes writes into this.
-     ConnectionLines reads from it.
+     SHARED NETWORK STATE
      ======================================================= */
 
   const networkRef =
@@ -258,9 +323,7 @@ export function NeuralCoreCanvas({
      ======================================================= */
 
   if (!mounted) {
-
     return (
-
       <div
         className={`
           relative
@@ -274,7 +337,6 @@ export function NeuralCoreCanvas({
           ${className}
         `}
       >
-
         <div
           className="
             text-center
@@ -309,20 +371,16 @@ export function NeuralCoreCanvas({
           </p>
 
         </div>
-
       </div>
-
     );
-
   }
 
 
   /* =======================================================
-     MAIN SCENE
+     MAIN
      ======================================================= */
 
   return (
-
     <div
       className={`
         relative
@@ -334,8 +392,18 @@ export function NeuralCoreCanvas({
       `}
     >
 
-      {/* Atmospheric Background Backdrop Lighting */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,_rgba(0,240,255,0.08)_0%,_rgba(160,64,255,0.04)_45%,_rgba(3,3,8,1)_85%)] pointer-events-none" />
+      {/* Atmospheric Background */}
+
+      <div
+        className="
+          absolute
+          inset-0
+          z-0
+          pointer-events-none
+          bg-[radial-gradient(circle_at_center,_rgba(0,240,255,0.08)_0%,_rgba(160,64,255,0.04)_45%,_rgba(3,3,8,1)_85%)]
+        "
+      />
+
 
       {/* =================================================
           WEBGL
@@ -350,7 +418,6 @@ export function NeuralCoreCanvas({
       >
 
         <Canvas
-
           camera={{
             position: [
               0,
@@ -378,12 +445,9 @@ export function NeuralCoreCanvas({
             powerPreference:
               'high-performance',
           }}
-
         >
 
-          {/* =============================================
-              BACKGROUND
-              ============================================= */}
+          {/* Background */}
 
           <color
             attach="background"
@@ -393,14 +457,11 @@ export function NeuralCoreCanvas({
           />
 
 
-          {/* =============================================
-              LIGHTING
-              ============================================= */}
+          {/* Lighting */}
 
           <ambientLight
             intensity={0.35}
           />
-
 
           <directionalLight
             position={[
@@ -413,7 +474,6 @@ export function NeuralCoreCanvas({
               primaryColor
             }
           />
-
 
           <pointLight
             position={[
@@ -428,38 +488,80 @@ export function NeuralCoreCanvas({
           />
 
 
-          {/* =============================================
-              NEURAL SYSTEM (SHARED ROTATION GROUP)
-              ============================================= */}
+          {/* =================================================
+              ONE SHARED 3D NEURAL SYSTEM
+              ================================================= */}
 
           <NeuralSystem
-            nodeCount={nodeCount}
-            interactionRadius={interactionRadius}
-            attractionStrength={attractionStrength}
-            primaryColor={primaryColor}
-            secondaryColor={secondaryColor}
-            networkRef={networkRef}
+            nodeCount={
+              nodeCount
+            }
+
+            interactionRadius={
+              interactionRadius
+            }
+
+            attractionStrength={
+              attractionStrength
+            }
+
+            primaryColor={
+              primaryColor
+            }
+
+            secondaryColor={
+              secondaryColor
+            }
+
+            networkRef={
+              networkRef
+            }
           />
 
 
-          {/* =============================================
-              POST PROCESSING (Bloom & Ethereal Glow)
-              ============================================= */}
+          {/* =================================================
+              POST PROCESSING
+              ================================================= */}
 
           <EffectComposer>
+
             <Bloom
               intensity={0.75}
               luminanceThreshold={0.2}
               luminanceSmoothing={0.9}
               mipmapBlur
             />
-            <Vignette eskil={false} offset={0.1} darkness={0.8} />
+
+            <Vignette
+              eskil={false}
+              offset={0.1}
+              darkness={0.8}
+            />
+
           </EffectComposer>
 
 
-          {/* =============================================
-              CAMERA CONTROL (Handled via NeuralSystem pointer dampening)
-              ============================================= */}
+          {/* =================================================
+              CAMERA CONTROL
+              ================================================= */}
+
+          <OrbitControls
+            enableZoom={false}
+            enablePan={false}
+
+            minPolarAngle={0.05}
+
+            maxPolarAngle={
+              Math.PI - 0.05
+            }
+
+            enableDamping
+
+            dampingFactor={0.08}
+
+            rotateSpeed={0.65}
+          />
+
         </Canvas>
 
       </div>
@@ -488,15 +590,11 @@ export function NeuralCoreCanvas({
           border-cyan-500/20
         "
       >
-
         SYNAPTIC NODE CLOUD
         {' // '}
         CLICK NODE TO TRIGGER IMPULSE
-
       </div>
 
     </div>
-
   );
-
 }
