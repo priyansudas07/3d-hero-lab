@@ -188,103 +188,32 @@ export function SynapticNodes({
 
 
       /* -----------------------------------------------------
-         CENTRAL 3D CLOUD
+         ORGANIC VOLUMETRIC NEURAL NEBULA
          ----------------------------------------------------- */
 
-      if (type < 0.68) {
-        const radius =
-          0.45 +
-          Math.cbrt(Math.random()) *
-          2.25;
+      const radius =
+        0.5 +
+        Math.pow(Math.random(), 0.7) * 3.2;
 
-        const theta =
-          Math.random() *
-          Math.PI *
-          2;
+      const theta =
+        Math.random() *
+        Math.PI *
+        2;
 
-        const phi =
-          Math.acos(
-            2 * Math.random() - 1
-          );
+      const phi =
+        Math.acos(
+          2 * Math.random() - 1
+        );
 
-        x =
-          radius *
-          Math.sin(phi) *
-          Math.cos(theta);
+      // Smooth organic noise variation to break perfect sphere uniformity
+      const noise = Math.sin(theta * 3.0) * Math.cos(phi * 2.0) * 0.35;
+      const r = radius + noise;
 
-        y =
-          radius *
-          Math.sin(phi) *
-          Math.sin(theta);
+      x = r * Math.sin(phi) * Math.cos(theta);
+      y = r * Math.sin(phi) * Math.sin(theta);
+      z = r * Math.cos(phi);
 
-        z =
-          radius *
-          Math.cos(phi);
-
-        scale =
-          0.014 +
-          Math.random() * 0.014;
-      }
-
-      /* -----------------------------------------------------
-         SHORT AXON STRUCTURES
-         ----------------------------------------------------- */
-
-      else {
-        const numAxons = 6;
-
-        const axonIndex =
-          Math.floor(
-            Math.random() *
-            numAxons
-          );
-
-        const angle =
-          (axonIndex / numAxons) *
-          Math.PI *
-          2;
-
-        const distance =
-          1.2 +
-          Math.pow(
-            Math.random(),
-            1.8
-          ) * 2.8;
-
-        const spiral =
-          distance * 1.35;
-
-        const dispersion =
-          0.10 +
-          distance * 0.055;
-
-        x =
-          Math.cos(angle) *
-          distance +
-          Math.cos(spiral) *
-          dispersion;
-
-        y =
-          Math.sin(angle) *
-          distance +
-          Math.sin(spiral) *
-          dispersion;
-
-        /*
-         * Slight depth variation.
-         *
-         * Increased from the previous extremely flat
-         * distribution so the network reads as volumetric.
-         */
-        z =
-          (Math.random() - 0.5) *
-          distance *
-          0.45;
-
-        scale =
-          0.011 +
-          Math.random() * 0.011;
-      }
+      scale = 0.012 + Math.random() * 0.016;
 
 
       const index = i * 3;
