@@ -146,6 +146,12 @@ export function SynapticNodes({
       []
     );
 
+  const nearbyFlags =
+    useMemo(
+      () => new Uint8Array(count),
+      [count]
+    );
+
 
   /* =========================================================
      GENERATE NETWORK
@@ -839,6 +845,24 @@ export function SynapticNodes({
           neighborBuffer
         );
 
+      nearbyFlags.fill(0);
+
+      for (
+        let n = 0;
+        n < numNear;
+        n++
+      ) {
+        const index =
+          neighborBuffer[n];
+
+        if (
+          index >= 0 &&
+          index < count
+        ) {
+          nearbyFlags[index] = 1;
+        }
+      }
+
 
       /* -----------------------------------------------------
          Process only nearby particles
@@ -1001,12 +1025,7 @@ export function SynapticNodes({
          */
 
         if (
-          !neighborBuffer
-            .slice(
-              0,
-              numNear
-            )
-            .includes(i)
+          nearbyFlags[i] === 0
         ) {
 
           currentPositions[index] =
