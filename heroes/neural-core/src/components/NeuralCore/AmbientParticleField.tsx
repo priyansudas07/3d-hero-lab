@@ -33,9 +33,9 @@ export interface AmbientParticleFieldProps {
    ========================================================= */
 
 export function AmbientParticleField({
-  count = 220,
+  count = 180,
 
-  spread = 14.0,
+  spread = 15.0,
 
   primaryColor = '#00F0FF',
 
@@ -80,7 +80,7 @@ export function AmbientParticleField({
       // Distribute particles through a wide 3D computational volume
       const x = (Math.random() - 0.5) * spread;
       const y = (Math.random() - 0.5) * spread;
-      const z = (Math.random() - 0.5) * (spread * 0.75);
+      const z = (Math.random() - 0.5) * (spread * 0.85);
 
       pos[idx] = x;
       pos[idx + 1] = y;
@@ -146,9 +146,9 @@ export function AmbientParticleField({
       const initZ = initialPositions[idx + 2];
 
       // Ultra-slow harmonic floating drift
-      const offsetX = Math.sin(time * 0.15 + i * 0.1) * 0.25;
-      const offsetY = Math.cos(time * 0.12 + i * 0.15) * 0.25;
-      const offsetZ = Math.sin(time * 0.10 + i * 0.2) * 0.20;
+      const offsetX = Math.sin(time * 0.10 + i * 0.1) * 0.18;
+      const offsetY = Math.cos(time * 0.08 + i * 0.15) * 0.18;
+      const offsetZ = Math.sin(time * 0.07 + i * 0.2) * 0.14;
 
       array[idx] = initX + offsetX;
       array[idx + 1] = initY + offsetY;
@@ -172,11 +172,11 @@ export function AmbientParticleField({
     >
 
       <pointsMaterial
-        size={0.035}
+        size={0.025}
         sizeAttenuation={true}
         vertexColors={true}
         transparent={true}
-        opacity={0.35}
+        opacity={0.22}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />

@@ -635,9 +635,9 @@ export function NeuralCoreCanvas({
           <EffectComposer>
 
             <Bloom
-              intensity={0.75}
-              luminanceThreshold={0.2}
-              luminanceSmoothing={0.9}
+              intensity={0.65}
+              luminanceThreshold={0.25}
+              luminanceSmoothing={0.85}
               mipmapBlur
             />
 
