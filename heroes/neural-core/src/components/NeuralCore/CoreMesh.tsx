@@ -103,7 +103,7 @@ export function CoreMesh({
   });
 
   return (
-    <group scale={[1.15, 1.15, 1.15]}>
+    <group>
       {/* Outer Geodesic Shell */}
 
       <mesh ref={outerWireRef}>
