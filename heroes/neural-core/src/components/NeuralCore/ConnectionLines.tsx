@@ -1,46 +1,87 @@
 'use client';
 
-import React, { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import React, {
+  useMemo,
+  useRef,
+} from 'react';
+
+import {
+  useFrame,
+} from '@react-three/fiber';
+
 import * as THREE from 'three';
-import { SynapticNetworkRef } from '../../core/3d/synaptic/SynapticNetwork';
+
+import {
+  SynapticNetworkRef,
+} from '../../core/3d/synaptic/SynapticNetwork';
 
 interface ConnectionLinesProps {
-  networkRef?: SynapticNetworkRef;
+  networkRef: SynapticNetworkRef;
   color?: string;
 }
 
 const vertexShader = `
   uniform float uTime;
-  uniform vec2 uPointer;
+
   attribute float aProgress;
+
   varying float vProgress;
-  varying float vPointerDist;
 
   void main() {
+
     vProgress = aProgress;
-    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-    vPointerDist = distance(worldPosition.xy, uPointer * 5.0);
-    gl_Position = projectionMatrix * viewMatrix * worldPosition;
+
+    vec4 worldPosition =
+      modelMatrix *
+      vec4(position, 1.0);
+
+    gl_Position =
+      projectionMatrix *
+      viewMatrix *
+      worldPosition;
   }
 `;
 
 const fragmentShader = `
   uniform float uTime;
   uniform vec3 uColor;
+
   varying float vProgress;
-  varying float vPointerDist;
 
   void main() {
-    float pulse = sin((vProgress * 10.0) - (uTime * 2.0)) * 0.5 + 0.5;
-    pulse = pow(pulse, 5.0);
 
-    float cursorFlare = smoothstep(3.5, 0.5, vPointerDist);
+    /*
+     * Continuous traveling pulse.
+     */
 
-    vec3 finalColor = mix(uColor * 0.2, uColor * (1.5 + cursorFlare * 1.5), pulse + cursorFlare * 0.4);
-    float alpha = mix(0.04, 0.7, pulse + cursorFlare * 0.3);
+    float wave =
+      sin(
+        vProgress * 12.0 -
+        uTime * 2.0
+      );
 
-    gl_FragColor = vec4(finalColor, alpha);
+    wave =
+      wave * 0.5 + 0.5;
+
+    wave =
+      pow(wave, 7.0);
+
+    float intensity =
+      0.10 +
+      wave * 0.55;
+
+    vec3 finalColor =
+      uColor * intensity;
+
+    float alpha =
+      0.08 +
+      wave * 0.30;
+
+    gl_FragColor =
+      vec4(
+        finalColor,
+        alpha
+      );
   }
 `;
 
@@ -48,73 +89,206 @@ export function ConnectionLines({
   networkRef,
   color = '#A040FF',
 }: ConnectionLinesProps) {
-  const lineRef = useRef<THREE.LineSegments>(null);
-  const currentPointer = useRef(new THREE.Vector2(0, 0));
 
-  const { lineGeometry, uniforms } = useMemo(() => {
-    const edgePairs = networkRef?.current?.edges || [];
-    const positions = new Float32Array(Math.max(edgePairs.length * 6, 6));
-    const progress = new Float32Array(Math.max(edgePairs.length * 2, 2));
+  const lineRef =
+    useRef<THREE.LineSegments>(null);
 
-    for (let e = 0; e < edgePairs.length; e++) {
-      progress[e * 2] = 0.0;
-      progress[e * 2 + 1] = 1.0;
+  /*
+   * Maximum number of edges.
+   *
+   * This prevents accidental
+   * massive GPU buffers.
+   */
+
+  const MAX_EDGES = 5000;
+
+  const geometry = useMemo(() => {
+
+    const positions =
+      new Float32Array(
+        MAX_EDGES * 6
+      );
+
+    const progress =
+      new Float32Array(
+        MAX_EDGES * 2
+      );
+
+    /*
+     * Each edge has:
+     *
+     * endpoint A = 0
+     * endpoint B = 1
+     */
+
+    for (
+      let i = 0;
+      i < MAX_EDGES;
+      i++
+    ) {
+
+      progress[i * 2] = 0;
+      progress[i * 2 + 1] = 1;
     }
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('aProgress', new THREE.Float32BufferAttribute(progress, 1));
+    const geo =
+      new THREE.BufferGeometry();
 
-    const shaderUniforms = {
-      uTime: { value: 0 },
-      uPointer: { value: new THREE.Vector2(0, 0) },
-      uColor: { value: new THREE.Color(color) },
-    };
+    geo.setAttribute(
+      'position',
+      new THREE.BufferAttribute(
+        positions,
+        3
+      )
+    );
 
-    return { lineGeometry: geometry, uniforms: shaderUniforms };
-  }, [networkRef, color]);
+    geo.setAttribute(
+      'aProgress',
+      new THREE.BufferAttribute(
+        progress,
+        1
+      )
+    );
 
-  useFrame((state, delta) => {
-    if (!lineRef.current) return;
-    const mat = lineRef.current.material as THREE.ShaderMaterial;
-    mat.uniforms.uTime.value = state.clock.elapsedTime;
+    geo.setDrawRange(
+      0,
+      0
+    );
 
-    currentPointer.current.x = THREE.MathUtils.damp(currentPointer.current.x, state.pointer.x, 5, delta);
-    currentPointer.current.y = THREE.MathUtils.damp(currentPointer.current.y, state.pointer.y, 5, delta);
-    mat.uniforms.uPointer.value.copy(currentPointer.current);
+    return geo;
 
-    const positionsAttr = lineRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
-    const stateNet = networkRef?.current;
+  }, []);
 
-    if (stateNet && stateNet.positions && stateNet.edges.length > 0) {
-      const pos = stateNet.positions;
-      const edges = stateNet.edges;
+  const uniforms = useMemo(() => ({
+    uTime: {
+      value: 0,
+    },
 
-      for (let e = 0; e < edges.length; e++) {
-        const [a, b] = edges[e];
-        const aIndex = a * 3;
-        const bIndex = b * 3;
+    uColor: {
+      value: new THREE.Color(
+        color
+      ),
+    },
+  }), [color]);
 
-        positionsAttr.setXYZ(e * 2, pos[aIndex], pos[aIndex + 1], pos[aIndex + 2]);
-        positionsAttr.setXYZ(e * 2 + 1, pos[bIndex], pos[bIndex + 1], pos[bIndex + 2]);
-      }
-      positionsAttr.needsUpdate = true;
+  useFrame((state) => {
+
+    const line =
+      lineRef.current;
+
+    if (!line) return;
+
+    const network =
+      networkRef.current;
+
+    if (
+      !network.positions ||
+      network.edges.length === 0
+    ) {
+      return;
     }
 
-    lineRef.current.rotation.y = state.clock.elapsedTime * 0.025;
-    lineRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.01) * 0.04;
+    const positionAttribute =
+      geometry.getAttribute(
+        'position'
+      ) as THREE.BufferAttribute;
+
+    const positions =
+      network.positions;
+
+    const edges =
+      network.edges;
+
+    const edgeCount =
+      Math.min(
+        edges.length,
+        MAX_EDGES
+      );
+
+    /*
+     * Update line endpoints
+     * using the ACTUAL node positions.
+     */
+
+    for (
+      let i = 0;
+      i < edgeCount;
+      i++
+    ) {
+
+      const [
+        a,
+        b,
+      ] = edges[i];
+
+      const aIndex =
+        a * 3;
+
+      const bIndex =
+        b * 3;
+
+      positionAttribute.setXYZ(
+        i * 2,
+        positions[aIndex],
+        positions[aIndex + 1],
+        positions[aIndex + 2]
+      );
+
+      positionAttribute.setXYZ(
+        i * 2 + 1,
+        positions[bIndex],
+        positions[bIndex + 1],
+        positions[bIndex + 2]
+      );
+    }
+
+    positionAttribute.needsUpdate =
+      true;
+
+    geometry.setDrawRange(
+      0,
+      edgeCount * 2
+    );
+
+    /*
+     * Shader animation.
+     */
+
+    const material =
+      line.material as THREE.ShaderMaterial;
+
+    material.uniforms.uTime.value =
+      state.clock.elapsedTime;
+
   });
 
   return (
-    <lineSegments ref={lineRef} geometry={lineGeometry}>
+    <lineSegments
+      ref={lineRef}
+      geometry={geometry}
+    >
+
       <shaderMaterial
-        vertexShader={vertexShader}
-        fragmentShader={fragmentShader}
-        uniforms={uniforms}
+        vertexShader={
+          vertexShader
+        }
+
+        fragmentShader={
+          fragmentShader
+        }
+
+        uniforms={
+          uniforms
+        }
+
         transparent
-        blending={THREE.AdditiveBlending}
+        blending={
+          THREE.AdditiveBlending
+        }
+
         depthWrite={false}
       />
+
     </lineSegments>
   );
 }
