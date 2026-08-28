@@ -36,6 +36,10 @@ import {
   ConnectionLines,
 } from './ConnectionLines';
 
+import {
+  AmbientParticleField,
+} from './AmbientParticleField';
+
 
 /* =========================================================
    PROPS
@@ -267,6 +271,18 @@ function NeuralSystem({
       ref={groupRef}
       scale={1.15}
     >
+
+      {/* =================================================
+          AMBIENT ATMOSPHERIC DUST
+          ================================================= */}
+
+      <AmbientParticleField
+        count={220}
+        spread={14.0}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+      />
+
 
       {/* =================================================
           CENTRAL CORE
