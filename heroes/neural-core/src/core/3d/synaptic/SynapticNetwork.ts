@@ -4,6 +4,7 @@ export interface SynapticNetworkState {
   edges: Array<[number, number]>;
   signalIntensities: Map<number, number>;
   nodeCount: number;
+  signalPropagator: any | null;
 }
 
 export interface SynapticNetworkRef {

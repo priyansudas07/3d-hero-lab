@@ -27,9 +27,7 @@ import {
    ========================================================= */
 
 export interface SynapticNetworkState {
-
-  positions:
-    Float32Array | null;
+  positions: Float32Array | null;
 
   adjacency:
     Map<number, number[]> | null;
@@ -42,13 +40,13 @@ export interface SynapticNetworkState {
 
   nodeCount:
     number;
+
+  signalPropagator:
+    SignalPropagator | null;
 }
 
-
 export type SynapticNetworkRef =
-  React.MutableRefObject<
-    SynapticNetworkState
-  >;
+  React.MutableRefObject<SynapticNetworkState>;
 
 
 /* =========================================================
@@ -56,7 +54,6 @@ export type SynapticNetworkRef =
    ========================================================= */
 
 interface SynapticNodesProps {
-
   count?: number;
 
   interactionRadius?: number;
@@ -71,8 +68,7 @@ interface SynapticNodesProps {
     nodeId: number
   ) => void;
 
-  networkRef?:
-    SynapticNetworkRef;
+  networkRef?: SynapticNetworkRef;
 }
 
 
@@ -97,84 +93,64 @@ export function SynapticNodes({
 }: SynapticNodesProps) {
 
   const meshRef =
-    useRef<THREE.InstancedMesh>(
-      null
-    );
+    useRef<THREE.InstancedMesh>(null);
 
-
-  /* =======================================================
-     SIMULATION SYSTEMS
-     ======================================================= */
+  /* ---------------------------------------------------------
+     Simulation systems
+     --------------------------------------------------------- */
 
   const signalPropagator =
     useMemo(
-      () =>
-        new SignalPropagator(),
+      () => new SignalPropagator(),
       []
     );
-
 
   const spatialGrid =
     useMemo(
-      () =>
-        new SpatialGrid(1.6),
+      () => new SpatialGrid(1.6),
       []
     );
 
-
-  /* =======================================================
-     POINTER
-     ======================================================= */
+  /* ---------------------------------------------------------
+     Mouse
+     --------------------------------------------------------- */
 
   const currentPointerWorld =
     useRef(
-      new THREE.Vector3(
-        0,
-        0,
-        0
-      )
+      new THREE.Vector3()
     );
 
-
-  /* =======================================================
-     REUSABLE OBJECTS
-     ======================================================= */
+  /* ---------------------------------------------------------
+     Reusable objects
+     --------------------------------------------------------- */
 
   const reusableDummy =
     useMemo(
-      () =>
-        new THREE.Object3D(),
+      () => new THREE.Object3D(),
       []
     );
-
 
   const reusableColor =
     useMemo(
-      () =>
-        new THREE.Color(),
+      () => new THREE.Color(),
       []
     );
-
 
   const neighborBuffer =
     useMemo(
-      () =>
-        new Array<number>(),
+      () => new Array<number>(),
       []
     );
 
-
   const nearbyFlags =
     useMemo(
-      () =>
-        new Uint8Array(count),
+      () => new Uint8Array(count),
       [count]
     );
 
-
-  /* =======================================================
+  /* =========================================================
      GENERATE NETWORK
-     ======================================================= */
+     ========================================================= */
 
   const {
     initialPositions,
@@ -205,18 +181,12 @@ export function SynapticNodes({
         count * 3
       );
 
-
     const graph =
-      new Map<
-        number,
-        number[]
-      >();
-
+      new Map<number, number[]>();
 
     const edges:
       Array<[number, number]> =
       [];
-
 
     const c1 =
       new THREE.Color(
@@ -228,10 +198,9 @@ export function SynapticNodes({
         secondaryColor
       );
 
-
-    /* =====================================================
-       GENERATE PARTICLES
-       ===================================================== */
+    /* -------------------------------------------------------
+       Generate neural cloud
+       ------------------------------------------------------- */
 
     for (
       let i = 0;
@@ -240,22 +209,18 @@ export function SynapticNodes({
     ) {
 
       let x = 0;
-
       let y = 0;
-
       let z = 0;
 
       let scale =
         0.015;
 
-
       const type =
         Math.random();
 
-
-      /* ---------------------------------------------------
-         CENTRAL 3D CLOUD
-         --------------------------------------------------- */
+      /* -----------------------------------------------------
+         Central neural cloud
+         ----------------------------------------------------- */
 
       if (
         type < 0.68
@@ -268,12 +233,10 @@ export function SynapticNodes({
           ) *
           2.25;
 
-
         const theta =
           Math.random() *
           Math.PI *
           2;
-
 
         const phi =
           Math.acos(
@@ -282,47 +245,41 @@ export function SynapticNodes({
             1
           );
 
-
         x =
           radius *
           Math.sin(phi) *
           Math.cos(theta);
-
 
         y =
           radius *
           Math.sin(phi) *
           Math.sin(theta);
 
-
         z =
           radius *
           Math.cos(phi);
-
 
         scale =
           0.014 +
           Math.random() *
           0.014;
+
       }
 
-
-      /* ---------------------------------------------------
-         SHORT AXON STRUCTURES
-         --------------------------------------------------- */
+      /* -----------------------------------------------------
+         Short axon structures
+         ----------------------------------------------------- */
 
       else {
 
         const numAxons =
           6;
 
-
         const axonIndex =
           Math.floor(
             Math.random() *
             numAxons
           );
-
 
         const angle =
           (
@@ -332,7 +289,6 @@ export function SynapticNodes({
           Math.PI *
           2;
 
-
         const distance =
           1.2 +
           Math.pow(
@@ -341,17 +297,14 @@ export function SynapticNodes({
           ) *
           2.8;
 
-
         const spiral =
           distance *
           1.35;
-
 
         const dispersion =
           0.10 +
           distance *
           0.055;
-
 
         x =
           Math.cos(angle) *
@@ -359,17 +312,11 @@ export function SynapticNodes({
           Math.cos(spiral) *
           dispersion;
 
-
         y =
           Math.sin(angle) *
           distance +
           Math.sin(spiral) *
           dispersion;
-
-
-        /*
-         * More depth than the old implementation.
-         */
 
         z =
           (
@@ -377,8 +324,7 @@ export function SynapticNodes({
             0.5
           ) *
           distance *
-          0.45;
-
+          0.22;
 
         scale =
           0.011 +
@@ -386,10 +332,8 @@ export function SynapticNodes({
           0.011;
       }
 
-
       const index =
         i * 3;
-
 
       initPos[index] =
         x;
@@ -400,7 +344,6 @@ export function SynapticNodes({
       initPos[index + 2] =
         z;
 
-
       currPos[index] =
         x;
 
@@ -410,14 +353,8 @@ export function SynapticNodes({
       currPos[index + 2] =
         z;
 
-
       scs[i] =
         scale;
-
-
-      /* ---------------------------------------------------
-         COLOR
-         --------------------------------------------------- */
 
       reusableColor
         .copy(c1)
@@ -425,7 +362,6 @@ export function SynapticNodes({
           c2,
           Math.random()
         );
-
 
       cols[index] =
         reusableColor.r;
@@ -436,34 +372,30 @@ export function SynapticNodes({
       cols[index + 2] =
         reusableColor.b;
 
-
       graph.set(
         i,
         []
       );
     }
 
-
-    /* =====================================================
-       SPATIAL GRID
-       ===================================================== */
+    /* -------------------------------------------------------
+       Build spatial grid
+       ------------------------------------------------------- */
 
     spatialGrid.buildGrid(
       initPos,
       count
     );
 
-
-    /* =====================================================
-       CONNECTION GRAPH
-       ===================================================== */
+    /* -------------------------------------------------------
+       Build local graph
+       ------------------------------------------------------- */
 
     const MAX_DEGREE =
       4;
 
     const CONNECTION_RADIUS =
       1.55;
-
 
     for (
       let i = 0;
@@ -475,7 +407,6 @@ export function SynapticNodes({
         number[] =
         [];
 
-
       spatialGrid.getNeighbors(
         initPos[i * 3],
         initPos[i * 3 + 1],
@@ -483,7 +414,6 @@ export function SynapticNodes({
         CONNECTION_RADIUS,
         neighbors
       );
-
 
       for (
         let k = 0;
@@ -494,13 +424,11 @@ export function SynapticNodes({
         const j =
           neighbors[k];
 
-
         if (
           j <= i
         ) {
           continue;
         }
-
 
         if (
           graph.get(i)!.length >=
@@ -509,7 +437,6 @@ export function SynapticNodes({
           break;
         }
 
-
         if (
           graph.get(j)!.length >=
           MAX_DEGREE
@@ -517,23 +444,19 @@ export function SynapticNodes({
           continue;
         }
 
-
         graph
           .get(i)!
           .push(j);
 
-
         graph
           .get(j)!
           .push(i);
-
 
         edges.push(
           [i, j]
         );
       }
     }
-
 
     return {
       initialPositions:
@@ -564,9 +487,9 @@ export function SynapticNodes({
   ]);
 
 
-  /* =======================================================
+  /* =========================================================
      PUBLISH NETWORK
-     ======================================================= */
+     ========================================================= */
 
   useEffect(() => {
 
@@ -574,22 +497,20 @@ export function SynapticNodes({
       return;
     }
 
-
     networkRef.current.positions =
       currentPositions;
-
 
     networkRef.current.adjacency =
       adjacencyList;
 
-
     networkRef.current.edges =
       edgePairs;
-
 
     networkRef.current.nodeCount =
       count;
 
+    networkRef.current.signalPropagator =
+      signalPropagator;
 
     return () => {
 
@@ -607,9 +528,11 @@ export function SynapticNodes({
         networkRef.current.edges =
           [];
 
-        networkRef.current
-          .signalIntensities
+        networkRef.current.signalIntensities
           .clear();
+
+        networkRef.current.signalPropagator =
+          null;
 
         networkRef.current.nodeCount =
           0;
@@ -623,23 +546,22 @@ export function SynapticNodes({
     adjacencyList,
     edgePairs,
     count,
+    signalPropagator,
   ]);
 
 
-  /* =======================================================
+  /* =========================================================
      INITIAL INSTANCE SETUP
-     ======================================================= */
+     ========================================================= */
 
   useEffect(() => {
 
     const mesh =
       meshRef.current;
 
-
     if (!mesh) {
       return;
     }
-
 
     const colorAttribute =
       new THREE.InstancedBufferAttribute(
@@ -649,10 +571,8 @@ export function SynapticNodes({
         3
       );
 
-
     mesh.instanceColor =
       colorAttribute;
-
 
     for (
       let i = 0;
@@ -663,21 +583,17 @@ export function SynapticNodes({
       const index =
         i * 3;
 
-
       reusableDummy.position.set(
         initialPositions[index],
         initialPositions[index + 1],
         initialPositions[index + 2]
       );
 
-
       reusableDummy.scale.setScalar(
         scales[i]
       );
 
-
       reusableDummy.updateMatrix();
-
 
       mesh.setMatrixAt(
         i,
@@ -685,20 +601,13 @@ export function SynapticNodes({
       );
     }
 
-
     mesh.instanceMatrix
       .needsUpdate =
       true;
 
-
-    if (
-      mesh.instanceColor
-    ) {
-
-      mesh.instanceColor
-        .needsUpdate =
-        true;
-    }
+    mesh.instanceColor
+      .needsUpdate =
+      true;
 
   }, [
     count,
@@ -709,9 +618,9 @@ export function SynapticNodes({
   ]);
 
 
-  /* =======================================================
+  /* =========================================================
      CLICK
-     ======================================================= */
+     ========================================================= */
 
   const handlePointerDown =
     (
@@ -720,7 +629,6 @@ export function SynapticNodes({
 
       event.stopPropagation();
 
-
       if (
         event.instanceId ===
         undefined
@@ -728,17 +636,19 @@ export function SynapticNodes({
         return;
       }
 
-
       const nodeId =
         event.instanceId;
 
+      if (
+        adjacencyList
+      ) {
 
-      signalPropagator
-        .triggerSignal(
+        signalPropagator.triggerSignal(
           nodeId,
-          adjacencyList
+          adjacencyList,
+          2.4
         );
-
+      }
 
       onNodeClick?.(
         nodeId
@@ -746,9 +656,9 @@ export function SynapticNodes({
     };
 
 
-  /* =======================================================
+  /* =========================================================
      FRAME LOOP
-     ======================================================= */
+     ========================================================= */
 
   useFrame(
     (
@@ -759,25 +669,21 @@ export function SynapticNodes({
       const mesh =
         meshRef.current;
 
-
       if (!mesh) {
         return;
       }
 
-
-      /* ===================================================
-         POINTER POSITION
-         =================================================== */
+      /* -----------------------------------------------------
+         Mouse world position
+         ----------------------------------------------------- */
 
       const targetX =
         state.pointer.x *
         5.2;
 
-
       const targetY =
         state.pointer.y *
         3.8;
-
 
       currentPointerWorld.current.x =
         THREE.MathUtils.damp(
@@ -786,7 +692,6 @@ export function SynapticNodes({
           5,
           delta
         );
-
 
       currentPointerWorld.current.y =
         THREE.MathUtils.damp(
@@ -797,15 +702,14 @@ export function SynapticNodes({
         );
 
 
-      /* ===================================================
-         SIGNAL PROPAGATION
-         =================================================== */
+      /* -----------------------------------------------------
+         Signal propagation
+         ----------------------------------------------------- */
 
       const activeSignals =
         signalPropagator.update(
           delta
         );
-
 
       if (networkRef) {
 
@@ -815,9 +719,9 @@ export function SynapticNodes({
       }
 
 
-      /* ===================================================
-         FIND NEARBY PARTICLES
-         =================================================== */
+      /* -----------------------------------------------------
+         Cursor neighborhood
+         ----------------------------------------------------- */
 
       const numNear =
         spatialGrid.getNeighbors(
@@ -828,9 +732,7 @@ export function SynapticNodes({
           neighborBuffer
         );
 
-
       nearbyFlags.fill(0);
-
 
       for (
         let n = 0;
@@ -841,21 +743,19 @@ export function SynapticNodes({
         const index =
           neighborBuffer[n];
 
-
         if (
           index >= 0 &&
           index < count
         ) {
-
           nearbyFlags[index] =
             1;
         }
       }
 
 
-      /* ===================================================
-         CURSOR REPULSION
-         =================================================== */
+      /* -----------------------------------------------------
+         Cursor repulsion
+         ----------------------------------------------------- */
 
       for (
         let n = 0;
@@ -866,7 +766,6 @@ export function SynapticNodes({
         const i =
           neighborBuffer[n];
 
-
         if (
           i < 0 ||
           i >= count
@@ -874,10 +773,8 @@ export function SynapticNodes({
           continue;
         }
 
-
         const index =
           i * 3;
-
 
         const ix =
           initialPositions[index];
@@ -888,7 +785,6 @@ export function SynapticNodes({
         const iz =
           initialPositions[index + 2];
 
-
         const dx =
           ix -
           currentPointerWorld.current.x;
@@ -897,11 +793,9 @@ export function SynapticNodes({
           iy -
           currentPointerWorld.current.y;
 
-
         const distSq =
           dx * dx +
           dy * dy;
-
 
         if (
           distSq >
@@ -911,7 +805,6 @@ export function SynapticNodes({
           continue;
         }
 
-
         if (
           distSq <=
           0.0001
@@ -919,20 +812,17 @@ export function SynapticNodes({
           continue;
         }
 
-
         const dist =
           Math.sqrt(
             distSq
           );
-
 
         const factor =
           1 -
           dist /
           interactionRadius;
 
-
-        const targetX =
+        const targetNodeX =
           ix +
           (
             dx /
@@ -941,8 +831,7 @@ export function SynapticNodes({
           factor *
           attractionStrength;
 
-
-        const targetY =
+        const targetNodeY =
           iy +
           (
             dy /
@@ -951,24 +840,21 @@ export function SynapticNodes({
           factor *
           attractionStrength;
 
-
         currentPositions[index] =
           THREE.MathUtils.damp(
             currentPositions[index],
-            targetX,
+            targetNodeX,
             7,
             delta
           );
-
 
         currentPositions[index + 1] =
           THREE.MathUtils.damp(
             currentPositions[index + 1],
-            targetY,
+            targetNodeY,
             7,
             delta
           );
-
 
         currentPositions[index + 2] =
           THREE.MathUtils.damp(
@@ -980,9 +866,9 @@ export function SynapticNodes({
       }
 
 
-      /* ===================================================
-         UPDATE PARTICLES
-         =================================================== */
+      /* -----------------------------------------------------
+         Update every node
+         ----------------------------------------------------- */
 
       for (
         let i = 0;
@@ -993,15 +879,15 @@ export function SynapticNodes({
         const index =
           i * 3;
 
-
         const signal =
-          activeSignals.get(i) ??
-          0;
+          activeSignals.get(
+            i
+          ) ?? 0;
 
 
-        /* -------------------------------------------------
-           RETURN TO BASE
-           ------------------------------------------------- */
+        /* ---------------------------------------------------
+           Return to base position
+           --------------------------------------------------- */
 
         if (
           nearbyFlags[i] === 0
@@ -1015,7 +901,6 @@ export function SynapticNodes({
               delta
             );
 
-
           currentPositions[index + 1] =
             THREE.MathUtils.damp(
               currentPositions[index + 1],
@@ -1023,7 +908,6 @@ export function SynapticNodes({
               3.5,
               delta
             );
-
 
           currentPositions[index + 2] =
             THREE.MathUtils.damp(
@@ -1035,40 +919,46 @@ export function SynapticNodes({
         }
 
 
-        /* -------------------------------------------------
-           SCALE
-           ------------------------------------------------- */
+        /* ---------------------------------------------------
+           Node scale
+           --------------------------------------------------- */
 
         let scale =
           scales[i];
 
-
-        scale *=
-          1 +
-          signal *
-          1.25;
-
-
+        /*
+         * Signal produces a strong pulse.
+         */
         if (
-          signal === 0
+          signal > 0
+        ) {
+
+          scale *=
+            1 +
+            signal *
+            2.0;
+        }
+
+        /*
+         * Cursor produces a softer reaction.
+         */
+        else if (
+          nearbyFlags[i] !== 0
         ) {
 
           const dx =
             initialPositions[index] -
             currentPointerWorld.current.x;
 
-
           const dy =
             initialPositions[index + 1] -
             currentPointerWorld.current.y;
-
 
           const distance =
             Math.sqrt(
               dx * dx +
               dy * dy
             );
-
 
           if (
             distance <
@@ -1080,7 +970,6 @@ export function SynapticNodes({
               distance /
               interactionRadius;
 
-
             scale *=
               1 +
               factor *
@@ -1089,9 +978,9 @@ export function SynapticNodes({
         }
 
 
-        /* -------------------------------------------------
-           INSTANCE TRANSFORM
-           ------------------------------------------------- */
+        /* ---------------------------------------------------
+           Matrix
+           --------------------------------------------------- */
 
         reusableDummy.position.set(
           currentPositions[index],
@@ -1099,14 +988,11 @@ export function SynapticNodes({
           currentPositions[index + 2]
         );
 
-
         reusableDummy.scale.setScalar(
           scale
         );
 
-
         reusableDummy.updateMatrix();
-
 
         mesh.setMatrixAt(
           i,
@@ -1114,48 +1000,66 @@ export function SynapticNodes({
         );
 
 
-        /* -------------------------------------------------
-           INSTANCE COLOR
-           ------------------------------------------------- */
+        /* ---------------------------------------------------
+           Color
+           --------------------------------------------------- */
 
         const instanceColors =
           mesh.instanceColor;
-
 
         if (
           instanceColors
         ) {
 
-          instanceColors.setXYZ(
-            i,
+          if (
+            signal > 0
+          ) {
 
-            THREE.MathUtils.lerp(
+            /*
+             * Signal pushes node toward white.
+             */
+            instanceColors.setXYZ(
+              i,
+
+              THREE.MathUtils.lerp(
+                baseColors[index],
+                1,
+                signal
+              ),
+
+              THREE.MathUtils.lerp(
+                baseColors[index + 1],
+                1,
+                signal
+              ),
+
+              THREE.MathUtils.lerp(
+                baseColors[index + 2],
+                1,
+                signal
+              )
+
+            );
+
+          }
+
+          else {
+
+            instanceColors.setXYZ(
+              i,
+
               baseColors[index],
-              1,
-              signal
-            ),
-
-            THREE.MathUtils.lerp(
               baseColors[index + 1],
-              1,
-              signal
-            ),
-
-            THREE.MathUtils.lerp(
-              baseColors[index + 2],
-              1,
-              signal
-            )
-          );
+              baseColors[index + 2]
+            );
+          }
         }
-
       }
 
 
       mesh.instanceMatrix
         .needsUpdate =
         true;
-
 
       if (
         mesh.instanceColor
@@ -1165,25 +1069,23 @@ export function SynapticNodes({
           .needsUpdate =
           true;
       }
-
     }
   );
 
 
-  /* =======================================================
+  /* =========================================================
      RENDER
-     ======================================================= */
+     ========================================================= */
 
   return (
+
     <instancedMesh
       ref={meshRef}
-
       args={[
         undefined,
         undefined,
         count,
       ]}
-
       onPointerDown={
         handlePointerDown
       }

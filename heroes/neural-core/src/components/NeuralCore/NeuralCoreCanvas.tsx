@@ -315,6 +315,8 @@ export function NeuralCoreCanvas({
         new Map(),
 
       nodeCount: 0,
+
+      signalPropagator: null,
     });
 
 
