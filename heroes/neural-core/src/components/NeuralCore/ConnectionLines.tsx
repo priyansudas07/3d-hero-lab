@@ -149,6 +149,11 @@ export function ConnectionLines({
       null
     );
 
+  const signalMaterialRef =
+    useRef<THREE.ShaderMaterial>(
+      null
+    );
+
 
   /*
    * Maximum normal network edges.
@@ -689,15 +694,6 @@ export function ConnectionLines({
       }
     }
   );
-
-
-  /*
-   * Signal material reference.
-   */
-  const signalMaterialRef =
-    useRef<THREE.ShaderMaterial>(
-      null
-    );
 
 
   /* =======================================================
