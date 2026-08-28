@@ -16,6 +16,7 @@ import * as THREE from 'three';
    ========================================================= */
 
 interface CoreMeshProps {
+
   primaryColor?: string;
 
   secondaryColor?: string;
@@ -36,9 +37,6 @@ export function CoreMesh({
   rotationSpeed = 1.0,
 }: CoreMeshProps) {
 
-  const outerWireRef =
-    useRef<THREE.Mesh>(null);
-
   const innerCoreRef =
     useRef<THREE.Mesh>(null);
 
@@ -47,38 +45,13 @@ export function CoreMesh({
 
 
   /* =======================================================
-     ANIMATION
+     LOCAL CORE ANIMATION
      ======================================================= */
 
   useFrame((state) => {
 
     const time =
       state.clock.elapsedTime;
-
-
-    /* =====================================================
-       OUTER GEODESIC SHELL
-       ===================================================== */
-
-    if (
-      outerWireRef.current
-    ) {
-
-      outerWireRef.current.rotation.x =
-        Math.sin(
-          time * 0.22
-        ) * 0.08;
-
-      outerWireRef.current.rotation.y =
-        time *
-        0.18 *
-        rotationSpeed;
-
-      outerWireRef.current.rotation.z =
-        Math.sin(
-          time * 0.17
-        ) * 0.035;
-    }
 
 
     /* =====================================================
@@ -108,8 +81,10 @@ export function CoreMesh({
       const pulse =
         1.0 +
         Math.sin(
-          time * 2.5
-        ) * 0.055;
+          time *
+          2.5
+        ) *
+        0.055;
 
 
       innerCoreRef.current
@@ -131,8 +106,10 @@ export function CoreMesh({
       const glowPulse =
         1.0 +
         Math.sin(
-          time * 2.0
-        ) * 0.10;
+          time *
+          2.0
+        ) *
+        0.10;
 
 
       glowRef.current
@@ -150,17 +127,19 @@ export function CoreMesh({
      ======================================================= */
 
   return (
+
     <group>
 
       {/* =================================================
-          OUTER GEODESIC WIREFRAME
+          OUTER GEODESIC SHELL
+
+          No local rotation.
+
+          It inherits the global 3D rotation from
+          NeuralSystem.
           ================================================= */}
 
-      <mesh
-        ref={
-          outerWireRef
-        }
-      >
+      <mesh>
 
         <icosahedronGeometry
           args={[
@@ -170,6 +149,7 @@ export function CoreMesh({
         />
 
         <meshStandardMaterial
+
           color={
             primaryColor
           }
@@ -178,20 +158,27 @@ export function CoreMesh({
             primaryColor
           }
 
-          emissiveIntensity={1.2}
+          emissiveIntensity={
+            1.2
+          }
 
           wireframe
 
-          metalness={0.9}
+          metalness={
+            0.9
+          }
 
-          roughness={0.1}
+          roughness={
+            0.1
+          }
+
         />
 
       </mesh>
 
 
       {/* =================================================
-          INNER NESTED POLYHEDRON
+          INNER POLYHEDRON
           ================================================= */}
 
       <mesh
@@ -208,6 +195,7 @@ export function CoreMesh({
         />
 
         <meshStandardMaterial
+
           color={
             secondaryColor
           }
@@ -216,13 +204,20 @@ export function CoreMesh({
             secondaryColor
           }
 
-          emissiveIntensity={1.5}
+          emissiveIntensity={
+            1.5
+          }
 
           wireframe
 
-          metalness={0.95}
+          metalness={
+            0.95
+          }
 
-          roughness={0.05}
+          roughness={
+            0.05
+          }
+
         />
 
       </mesh>
@@ -247,6 +242,7 @@ export function CoreMesh({
         />
 
         <meshStandardMaterial
+
           color={
             primaryColor
           }
@@ -255,13 +251,20 @@ export function CoreMesh({
             secondaryColor
           }
 
-          emissiveIntensity={2.0}
+          emissiveIntensity={
+            2.0
+          }
 
           transparent
 
-          opacity={0.85}
+          opacity={
+            0.85
+          }
 
-          roughness={0.2}
+          roughness={
+            0.2
+          }
+
         />
 
       </mesh>
