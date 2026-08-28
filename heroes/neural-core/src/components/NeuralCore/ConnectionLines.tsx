@@ -77,10 +77,10 @@ const fragmentShader = `
   void main() {
 
     /*
-     * Very subtle inactive network.
+     * Extremely subtle inactive network.
      */
     float base =
-      0.12;
+      0.075;
 
 
     /*
@@ -120,7 +120,7 @@ const fragmentShader = `
 
 
     float alpha =
-      0.045 +
+      0.025 +
       signal *
       0.75;
 
