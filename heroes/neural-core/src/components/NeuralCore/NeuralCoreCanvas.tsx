@@ -42,6 +42,7 @@ import {
    ========================================================= */
 
 export interface SynapticNodeCloudProps {
+
   nodeCount?: number;
 
   interactionRadius?: number;
@@ -60,21 +61,10 @@ export interface SynapticNodeCloudProps {
 
 /* =========================================================
    SHARED NEURAL SYSTEM
-   =========================================================
-
-   IMPORTANT:
-
-   This is now the ONLY component responsible for
-   global rotation of the neural structure.
-
-   CoreMesh
-   SynapticNodes
-   ConnectionLines
-
-   all live inside this same coordinate system.
    ========================================================= */
 
 interface NeuralSystemProps {
+
   nodeCount: number;
 
   interactionRadius: number;
@@ -90,6 +80,10 @@ interface NeuralSystemProps {
 }
 
 
+/* =========================================================
+   NEURAL SYSTEM
+   ========================================================= */
+
 function NeuralSystem({
   nodeCount,
   interactionRadius,
@@ -102,96 +96,173 @@ function NeuralSystem({
   const groupRef =
     useRef<THREE.Group>(null);
 
+
   const targetRotation =
     useRef(
-      new THREE.Vector3(0, 0, 0)
+      new THREE.Vector3(
+        0,
+        0,
+        0
+      )
     );
 
 
-  useFrame((state, delta) => {
+  const currentRotation =
+    useRef(
+      new THREE.Vector3(
+        0,
+        0,
+        0
+      )
+    );
 
-    const group =
-      groupRef.current;
 
-    if (!group) {
-      return;
+  /* =======================================================
+     GLOBAL 3D MOTION
+     ======================================================= */
+
+  useFrame(
+    (
+      state,
+      delta
+    ) => {
+
+      const group =
+        groupRef.current;
+
+      if (!group) {
+        return;
+      }
+
+
+      const time =
+        state.clock.elapsedTime;
+
+
+      /* =====================================================
+         MOUSE → TRUE 3D TILT
+         ===================================================== */
+
+      const mouseX =
+        state.pointer.x;
+
+      const mouseY =
+        state.pointer.y;
+
+
+      /*
+       * Vertical mouse movement tilts around X.
+       *
+       * Horizontal mouse movement tilts around Y.
+       *
+       * Small Z component creates a subtle banking motion.
+       */
+
+      const targetX =
+        mouseY *
+        0.28;
+
+      const targetY =
+        mouseX *
+        0.34;
+
+      const targetZ =
+        -mouseX *
+        0.045;
+
+
+      targetRotation.current.x =
+        targetX;
+
+      targetRotation.current.y =
+        targetY;
+
+      targetRotation.current.z =
+        targetZ;
+
+
+      /* =====================================================
+         SMOOTH MOUSE RESPONSE
+         ===================================================== */
+
+      currentRotation.current.x =
+        THREE.MathUtils.damp(
+          currentRotation.current.x,
+          targetRotation.current.x,
+          4.0,
+          delta
+        );
+
+
+      currentRotation.current.y =
+        THREE.MathUtils.damp(
+          currentRotation.current.y,
+          targetRotation.current.y,
+          4.0,
+          delta
+        );
+
+
+      currentRotation.current.z =
+        THREE.MathUtils.damp(
+          currentRotation.current.z,
+          targetRotation.current.z,
+          4.0,
+          delta
+        );
+
+
+      /* =====================================================
+         AUTONOMOUS 3D ROTATION
+         ===================================================== */
+
+      /*
+       * All three axes contribute to the motion.
+       *
+       * X = slow orbital tilt
+       * Y = primary rotation
+       * Z = subtle organic banking
+       */
+
+      const autoX =
+        time *
+        0.042;
+
+      const autoY =
+        time *
+        0.105;
+
+      const autoZ =
+        Math.sin(
+          time *
+          0.12
+        ) *
+        0.035;
+
+
+      group.rotation.x =
+        autoX +
+        currentRotation.current.x;
+
+
+      group.rotation.y =
+        autoY +
+        currentRotation.current.y;
+
+
+      group.rotation.z =
+        autoZ +
+        currentRotation.current.z;
     }
+  );
 
 
-    const time =
-      state.clock.elapsedTime;
-
-
-    /* =====================================================
-       MOUSE → 3D TILT
-       ===================================================== */
-
-    const mouseX =
-      state.pointer.x;
-
-    const mouseY =
-      state.pointer.y;
-
-
-    const targetX =
-      mouseY * 0.30;
-
-    const targetY =
-      mouseX * 0.30;
-
-    const targetZ =
-      mouseX * -0.055;
-
-
-    targetRotation.current.x =
-      THREE.MathUtils.damp(
-        targetRotation.current.x,
-        targetX,
-        4.0,
-        delta
-      );
-
-    targetRotation.current.y =
-      THREE.MathUtils.damp(
-        targetRotation.current.y,
-        targetY,
-        4.0,
-        delta
-      );
-
-    targetRotation.current.z =
-      THREE.MathUtils.damp(
-        targetRotation.current.z,
-        targetZ,
-        4.0,
-        delta
-      );
-
-
-    /* =====================================================
-       AUTONOMOUS 3D ROTATION
-
-       X + Y are deliberately both active.
-
-       This prevents the neural structure from appearing
-       like a flat horizontally rotating object.
-       ===================================================== */
-
-    group.rotation.x =
-      time * 0.045 +
-      targetRotation.current.x;
-
-    group.rotation.y =
-      time * 0.115 +
-      targetRotation.current.y;
-
-    group.rotation.z =
-      Math.sin(time * 0.14) * 0.025 +
-      targetRotation.current.z;
-  });
-
+  /* =========================================================
+     RENDER
+     ========================================================= */
 
   return (
+
     <group
       ref={groupRef}
       scale={1.15}
@@ -215,7 +286,7 @@ function NeuralSystem({
 
 
       {/* =================================================
-          SYNAPTIC NODE CLOUD
+          SYNAPTIC NODES
           ================================================= */}
 
       <SynapticNodes
@@ -284,6 +355,7 @@ export function NeuralCoreCanvas({
   className = '',
 }: SynapticNodeCloudProps) {
 
+
   /* =======================================================
      CLIENT MOUNT
      ======================================================= */
@@ -291,16 +363,19 @@ export function NeuralCoreCanvas({
   const [
     mounted,
     setMounted,
-  ] = useState(false);
+  ] =
+    useState(false);
 
 
   useEffect(() => {
+
     setMounted(true);
+
   }, []);
 
 
   /* =======================================================
-     SHARED NETWORK STATE
+     SHARED NETWORK
      ======================================================= */
 
   const networkRef =
@@ -316,7 +391,8 @@ export function NeuralCoreCanvas({
 
       nodeCount: 0,
 
-      signalPropagator: null,
+      signalPropagator:
+        null,
     });
 
 
@@ -325,7 +401,9 @@ export function NeuralCoreCanvas({
      ======================================================= */
 
   if (!mounted) {
+
     return (
+
       <div
         className={`
           relative
@@ -339,6 +417,7 @@ export function NeuralCoreCanvas({
           ${className}
         `}
       >
+
         <div
           className="
             text-center
@@ -373,6 +452,7 @@ export function NeuralCoreCanvas({
           </p>
 
         </div>
+
       </div>
     );
   }
@@ -383,6 +463,7 @@ export function NeuralCoreCanvas({
      ======================================================= */
 
   return (
+
     <div
       className={`
         relative
@@ -394,7 +475,9 @@ export function NeuralCoreCanvas({
       `}
     >
 
-      {/* Atmospheric Background */}
+      {/* =================================================
+          ATMOSPHERIC BACKGROUND
+          ================================================= */}
 
       <div
         className="
@@ -449,7 +532,9 @@ export function NeuralCoreCanvas({
           }}
         >
 
-          {/* Background */}
+          {/* =================================================
+              BACKGROUND
+              ================================================= */}
 
           <color
             attach="background"
@@ -459,7 +544,9 @@ export function NeuralCoreCanvas({
           />
 
 
-          {/* Lighting */}
+          {/* =================================================
+              LIGHTING
+              ================================================= */}
 
           <ambientLight
             intensity={0.35}
@@ -491,7 +578,7 @@ export function NeuralCoreCanvas({
 
 
           {/* =================================================
-              ONE SHARED 3D NEURAL SYSTEM
+              ONE GLOBAL NEURAL SYSTEM
               ================================================= */}
 
           <NeuralSystem
@@ -544,24 +631,34 @@ export function NeuralCoreCanvas({
 
 
           {/* =================================================
-              CAMERA CONTROL
+              MANUAL CAMERA INTERACTION
               ================================================= */}
 
           <OrbitControls
+
             enableZoom={false}
+
             enablePan={false}
 
-            minPolarAngle={0.05}
+            minPolarAngle={
+              0.05
+            }
 
             maxPolarAngle={
-              Math.PI - 0.05
+              Math.PI -
+              0.05
             }
 
             enableDamping
 
-            dampingFactor={0.08}
+            dampingFactor={
+              0.08
+            }
 
-            rotateSpeed={0.65}
+            rotateSpeed={
+              0.65
+            }
+
           />
 
         </Canvas>
@@ -592,9 +689,11 @@ export function NeuralCoreCanvas({
           border-cyan-500/20
         "
       >
+
         SYNAPTIC NODE CLOUD
         {' // '}
         CLICK NODE TO TRIGGER IMPULSE
+
       </div>
 
     </div>
