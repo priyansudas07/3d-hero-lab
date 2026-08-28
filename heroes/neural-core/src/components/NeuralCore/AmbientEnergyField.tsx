@@ -2,6 +2,7 @@
 
 import React, {
   useRef,
+  useMemo,
 } from 'react';
 
 import {
@@ -32,6 +33,41 @@ export interface AmbientEnergyFieldProps {
 
 
 /* =========================================================
+   VOLUMETRIC ATMOSPHERIC GLOW SHADERS
+   ========================================================= */
+
+const glowVertexShader = `
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    vViewPosition = -mvPosition.xyz;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const glowFragmentShader = `
+  uniform vec3 uColor;
+  uniform float uOpacity;
+
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+
+  void main() {
+    vec3 normal = normalize(vNormal);
+    vec3 viewDir = normalize(vViewPosition);
+
+    // Soft rim glow intensity fading inward
+    float intensity = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0);
+    
+    gl_FragColor = vec4(uColor * (intensity * 1.5), intensity * uOpacity);
+  }
+`;
+
+
+/* =========================================================
    COMPONENT
    ========================================================= */
 
@@ -51,9 +87,17 @@ export function AmbientEnergyField({
   const smoothedActivity =
     useRef(0.0);
 
+  const uniforms = useMemo(
+    () => ({
+      uColor: { value: new THREE.Color(secondaryColor) },
+      uOpacity: { value: 0.15 },
+    }),
+    [secondaryColor]
+  );
+
 
   /* =======================================================
-     FRAME LOOP (SUBTLE ENERGY BREATHING)
+     FRAME LOOP (SOFT VOLUMETRIC ATMOSPHERE)
      ======================================================= */
 
   useFrame((state, delta) => {
@@ -99,25 +143,24 @@ export function AmbientEnergyField({
 
 
     /* -----------------------------------------------------
-       BREATHING & SCALE PULSE
+       SOFT BREATHING & SCALE PULSE
        ----------------------------------------------------- */
 
     const pulse =
-      (1.0 + activity * 0.06) +
-      Math.sin(time * (1.2 + activity * 0.6)) * (0.035 + activity * 0.02);
+      (1.0 + activity * 0.05) +
+      Math.sin(time * (1.0 + activity * 0.5)) * (0.025 + activity * 0.015);
 
     mesh.scale.setScalar(pulse);
 
 
     /* -----------------------------------------------------
-       MATERIAL EMISSIVE & OPACITY MODULATION
+       MATERIAL SHADER UNIFORMS
        ----------------------------------------------------- */
 
-    const mat = mesh.material as THREE.MeshStandardMaterial;
+    const mat = mesh.material as THREE.ShaderMaterial;
 
-    if (mat) {
-      mat.opacity = 0.08 + activity * 0.10;
-      mat.emissiveIntensity = 0.6 + activity * 0.9;
+    if (mat && mat.uniforms.uOpacity) {
+      mat.uniforms.uOpacity.value = 0.12 + activity * 0.15;
     }
 
   });
@@ -142,16 +185,14 @@ export function AmbientEnergyField({
         ]}
       />
 
-      <meshStandardMaterial
-        color={primaryColor}
-        emissive={secondaryColor}
-        emissiveIntensity={0.6}
+      <shaderMaterial
+        vertexShader={glowVertexShader}
+        fragmentShader={glowFragmentShader}
+        uniforms={uniforms}
         transparent={true}
-        opacity={0.08}
-        roughness={0.4}
-        wireframe={true}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
+        side={THREE.BackSide}
       />
 
     </mesh>
