@@ -112,6 +112,13 @@ export function SynapticNodes({
     );
 
   /* ---------------------------------------------------------
+     Autonomous impulses timing (Delta-time based)
+     --------------------------------------------------------- */
+
+  const autoTimerRef = useRef(0);
+  const nextAutoDelayRef = useRef(1.5); // Random delay between 1.2s and 3.5s
+
+  /* ---------------------------------------------------------
      Mouse
      --------------------------------------------------------- */
 
@@ -159,6 +166,7 @@ export function SynapticNodes({
     baseColors,
     adjacencyList,
     edgePairs,
+    connectedNodeIds,
   } = useMemo(() => {
 
     const initPos =
@@ -458,6 +466,16 @@ export function SynapticNodes({
       }
     }
 
+    /*
+     * Pre-filter nodes that have at least 1 neighbor connection
+     */
+    const validNodes: number[] = [];
+    graph.forEach((neighbors, nodeId) => {
+      if (neighbors.length > 0) {
+        validNodes.push(nodeId);
+      }
+    });
+
     return {
       initialPositions:
         initPos,
@@ -476,6 +494,9 @@ export function SynapticNodes({
 
       edgePairs:
         edges,
+
+      connectedNodeIds:
+        validNodes,
     };
 
   }, [
@@ -619,7 +640,7 @@ export function SynapticNodes({
 
 
   /* =========================================================
-     CLICK
+     MANUAL CLICK
      ========================================================= */
 
   const handlePointerDown =
@@ -672,6 +693,34 @@ export function SynapticNodes({
       if (!mesh) {
         return;
       }
+
+      /* -----------------------------------------------------
+         AUTONOMOUS PROBABILISTIC NEURAL IMPULSES
+         ----------------------------------------------------- */
+
+      autoTimerRef.current += delta;
+
+      if (
+        autoTimerRef.current >= nextAutoDelayRef.current &&
+        connectedNodeIds.length > 0
+      ) {
+        autoTimerRef.current = 0;
+        // Irregular probabilistic delay between 1.5s and 4.2s
+        nextAutoDelayRef.current = 1.5 + Math.random() * 2.7;
+
+        // Subtle speed (1.4 vs 2.4 manual click speed)
+        const randomStartNode =
+          connectedNodeIds[
+            Math.floor(Math.random() * connectedNodeIds.length)
+          ];
+
+        signalPropagator.triggerSignal(
+          randomStartNode,
+          adjacencyList,
+          1.4
+        );
+      }
+
 
       /* -----------------------------------------------------
          Mouse world position
