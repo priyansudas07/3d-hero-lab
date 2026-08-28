@@ -10,6 +10,10 @@ import {
 
 import * as THREE from 'three';
 
+import type {
+  SynapticNetworkRef,
+} from './SynapticNodes';
+
 
 /* =========================================================
    PROPS
@@ -22,6 +26,8 @@ interface CoreMeshProps {
   secondaryColor?: string;
 
   rotationSpeed?: number;
+
+  networkRef?: SynapticNetworkRef;
 }
 
 
@@ -35,7 +41,12 @@ export function CoreMesh({
   secondaryColor = '#A040FF',
 
   rotationSpeed = 1.0,
+
+  networkRef,
 }: CoreMeshProps) {
+
+  const outerWireRef =
+    useRef<THREE.Mesh>(null);
 
   const innerCoreRef =
     useRef<THREE.Mesh>(null);
@@ -43,15 +54,72 @@ export function CoreMesh({
   const glowRef =
     useRef<THREE.Mesh>(null);
 
+  /*
+   * Damped network activity level (0.0 -> 1.0)
+   */
+  const smoothedActivity =
+    useRef(0.0);
+
 
   /* =======================================================
      LOCAL CORE ANIMATION
      ======================================================= */
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
 
     const time =
       state.clock.elapsedTime;
+
+
+    /* =====================================================
+       CALCULATE REAL NETWORK ACTIVITY
+       ===================================================== */
+
+    let targetActivity = 0.0;
+
+    if (networkRef?.current?.signalPropagator) {
+      const activeSignals =
+        networkRef.current.signalPropagator.getActiveSignals();
+
+      if (activeSignals.length > 0) {
+        let totalIntensity = 0;
+
+        for (let i = 0; i < activeSignals.length; i++) {
+          totalIntensity += activeSignals[i].intensity;
+        }
+
+        // Normalize activity level smoothly
+        targetActivity = Math.min(1.0, totalIntensity / 4.0);
+      }
+    }
+
+    // Damped interpolation to prevent strobing or sudden changes
+    smoothedActivity.current = THREE.MathUtils.damp(
+      smoothedActivity.current,
+      targetActivity,
+      3.5,
+      delta
+    );
+
+    const activity = smoothedActivity.current;
+
+
+    /* =====================================================
+       OUTER GEODESIC SHELL
+       ===================================================== */
+
+    if (
+      outerWireRef.current
+    ) {
+
+      const outerMat =
+        outerWireRef.current.material as THREE.MeshStandardMaterial;
+
+      if (outerMat) {
+        outerMat.emissiveIntensity =
+          1.2 + activity * 0.8;
+      }
+    }
 
 
     /* =====================================================
@@ -64,12 +132,12 @@ export function CoreMesh({
 
       innerCoreRef.current.rotation.x =
         time *
-        0.20 *
+        (0.20 + activity * 0.08) *
         rotationSpeed;
 
       innerCoreRef.current.rotation.y =
         -time *
-        0.31 *
+        (0.31 + activity * 0.10) *
         rotationSpeed;
 
       innerCoreRef.current.rotation.z =
@@ -82,9 +150,9 @@ export function CoreMesh({
         1.0 +
         Math.sin(
           time *
-          2.5
+          (2.5 + activity * 1.2)
         ) *
-        0.055;
+        (0.055 + activity * 0.035);
 
 
       innerCoreRef.current
@@ -92,6 +160,15 @@ export function CoreMesh({
         .setScalar(
           pulse
         );
+
+
+      const innerMat =
+        innerCoreRef.current.material as THREE.MeshStandardMaterial;
+
+      if (innerMat) {
+        innerMat.emissiveIntensity =
+          1.5 + activity * 1.2;
+      }
     }
 
 
@@ -104,12 +181,12 @@ export function CoreMesh({
     ) {
 
       const glowPulse =
-        1.0 +
+        (1.0 + activity * 0.12) +
         Math.sin(
           time *
-          2.0
+          (2.0 + activity * 1.0)
         ) *
-        0.10;
+        (0.10 + activity * 0.05);
 
 
       glowRef.current
@@ -117,6 +194,15 @@ export function CoreMesh({
         .setScalar(
           glowPulse
         );
+
+
+      const glowMat =
+        glowRef.current.material as THREE.MeshStandardMaterial;
+
+      if (glowMat) {
+        glowMat.emissiveIntensity =
+          2.0 + activity * 1.8;
+      }
     }
 
   });
@@ -132,14 +218,13 @@ export function CoreMesh({
 
       {/* =================================================
           OUTER GEODESIC SHELL
-
-          No local rotation.
-
-          It inherits the global 3D rotation from
-          NeuralSystem.
           ================================================= */}
 
-      <mesh>
+      <mesh
+        ref={
+          outerWireRef
+        }
+      >
 
         <icosahedronGeometry
           args={[

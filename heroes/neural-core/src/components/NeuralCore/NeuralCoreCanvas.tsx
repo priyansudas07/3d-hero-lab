@@ -282,6 +282,10 @@ function NeuralSystem({
         }
 
         rotationSpeed={1}
+
+        networkRef={
+          networkRef
+        }
       />
 
 
