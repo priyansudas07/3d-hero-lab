@@ -120,15 +120,6 @@ export function ConnectionLines({
   const lineRef =
     useRef<THREE.LineSegments>(null);
 
-  const globalGroupRef =
-    useRef<THREE.Group>(null);
-
-  const pointer =
-    useRef(
-      new THREE.Vector2(0, 0)
-    );
-
-
   const MAX_EDGES =
     2500;
 
@@ -198,10 +189,10 @@ export function ConnectionLines({
 
   /* =======================================================
      FRAME LOOP
-     ======================================================= */
+     ========================================================= */
 
   useFrame(
-    (state, delta) => {
+    (state) => {
       const line =
         lineRef.current;
 
@@ -212,53 +203,6 @@ export function ConnectionLines({
 
       const time =
         state.clock.elapsedTime;
-
-
-      /* ---------------------------------------------------
-         SAME GLOBAL 3D ROTATION AS CORE + NODES
-         --------------------------------------------------- */
-
-      const targetX =
-        state.pointer.y * 0.42;
-
-      const targetY =
-        state.pointer.x * 0.42;
-
-      const targetZ =
-        -state.pointer.x * 0.12;
-
-
-      pointer.current.x =
-        THREE.MathUtils.damp(
-          pointer.current.x,
-          targetX,
-          4.5,
-          delta
-        );
-
-      pointer.current.y =
-        THREE.MathUtils.damp(
-          pointer.current.y,
-          targetY,
-          4.5,
-          delta
-        );
-
-
-      if (globalGroupRef.current) {
-        globalGroupRef.current.rotation.x =
-          time * 0.105 +
-          pointer.current.x;
-
-        globalGroupRef.current.rotation.y =
-          time * 0.17 +
-          pointer.current.y;
-
-        globalGroupRef.current.rotation.z =
-          Math.sin(time * 0.11) *
-          0.055 +
-          targetZ;
-      }
 
 
       /* ---------------------------------------------------
@@ -401,26 +345,24 @@ export function ConnectionLines({
      ======================================================= */
 
   return (
-    <group ref={globalGroupRef}>
-      <lineSegments
-        ref={lineRef}
-        geometry={geometry}
-      >
-        <shaderMaterial
-          vertexShader={
-            vertexShader
-          }
-          fragmentShader={
-            fragmentShader
-          }
-          uniforms={uniforms}
-          transparent
-          blending={
-            THREE.AdditiveBlending
-          }
-          depthWrite={false}
-        />
-      </lineSegments>
-    </group>
+    <lineSegments
+      ref={lineRef}
+      geometry={geometry}
+    >
+      <shaderMaterial
+        vertexShader={
+          vertexShader
+        }
+        fragmentShader={
+          fragmentShader
+        }
+        uniforms={uniforms}
+        transparent
+        blending={
+          THREE.AdditiveBlending
+        }
+        depthWrite={false}
+      />
+    </lineSegments>
   );
 }

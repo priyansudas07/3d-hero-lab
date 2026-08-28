@@ -51,12 +51,9 @@ export function CoreMesh({
   secondaryColor = '#A040FF',
   rotationSpeed = 1.0,
 }: CoreMeshProps) {
-  const globalGroupRef = useRef<THREE.Group>(null);
   const outerWireRef = useRef<THREE.Mesh>(null);
   const innerCoreRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
-
-  const pointer = useRef(new THREE.Vector2(0, 0));
 
   const fresnelUniforms = useMemo(
     () => ({
@@ -67,41 +64,9 @@ export function CoreMesh({
     [primaryColor, secondaryColor]
   );
 
-  useFrame((state, delta) => {
+  useFrame((state) => {
     const time = state.clock.elapsedTime;
     fresnelUniforms.uTime.value = time;
-
-    const targetX = state.pointer.y * 0.42;
-    const targetY = state.pointer.x * 0.42;
-    const targetZ = -state.pointer.x * 0.12;
-
-    pointer.current.x = THREE.MathUtils.damp(
-      pointer.current.x,
-      targetX,
-      4.5,
-      delta
-    );
-
-    pointer.current.y = THREE.MathUtils.damp(
-      pointer.current.y,
-      targetY,
-      4.5,
-      delta
-    );
-
-    if (globalGroupRef.current) {
-      globalGroupRef.current.rotation.x =
-        time * 0.105 * rotationSpeed +
-        pointer.current.x;
-
-      globalGroupRef.current.rotation.y =
-        time * 0.17 * rotationSpeed +
-        pointer.current.y;
-
-      globalGroupRef.current.rotation.z =
-        Math.sin(time * 0.11) * 0.055 +
-        targetZ;
-    }
 
     if (outerWireRef.current) {
       outerWireRef.current.rotation.x =
@@ -138,10 +103,7 @@ export function CoreMesh({
   });
 
   return (
-    <group
-      ref={globalGroupRef}
-      scale={[1.15, 1.15, 1.15]}
-    >
+    <group scale={[1.15, 1.15, 1.15]}>
       {/* Outer Geodesic Shell */}
 
       <mesh ref={outerWireRef}>

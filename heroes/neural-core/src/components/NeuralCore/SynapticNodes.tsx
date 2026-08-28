@@ -556,51 +556,7 @@ export function SynapticNodes({
         state.clock.elapsedTime;
 
 
-      /* -----------------------------------------------------
-         SHARED GLOBAL 3D ROTATION
-         ----------------------------------------------------- */
 
-      const targetX =
-        state.pointer.y * 0.42;
-
-      const targetY =
-        state.pointer.x * 0.42;
-
-      const targetZ =
-        -state.pointer.x * 0.12;
-
-
-      globalPointer.current.x =
-        THREE.MathUtils.damp(
-          globalPointer.current.x,
-          targetX,
-          4.5,
-          delta
-        );
-
-      globalPointer.current.y =
-        THREE.MathUtils.damp(
-          globalPointer.current.y,
-          targetY,
-          4.5,
-          delta
-        );
-
-
-      if (globalGroupRef.current) {
-        globalGroupRef.current.rotation.x =
-          time * 0.105 +
-          globalPointer.current.x;
-
-        globalGroupRef.current.rotation.y =
-          time * 0.17 +
-          globalPointer.current.y;
-
-        globalGroupRef.current.rotation.z =
-          Math.sin(time * 0.11) *
-          0.055 +
-          targetZ;
-      }
 
 
       /* -----------------------------------------------------
@@ -924,31 +880,29 @@ export function SynapticNodes({
      ========================================================= */
 
   return (
-    <group ref={globalGroupRef}>
-      <instancedMesh
-        ref={meshRef}
-        args={[
-          undefined,
-          undefined,
-          count,
-        ]}
-        onPointerDown={
-          handlePointerDown
-        }
-      >
-        <sphereGeometry
-          args={[1, 6, 6]}
-        />
+    <instancedMesh
+      ref={meshRef}
+      args={[
+        undefined,
+        undefined,
+        count,
+      ]}
+      onPointerDown={
+        handlePointerDown
+      }
+    >
+      <sphereGeometry
+        args={[1, 6, 6]}
+      />
 
-        <meshBasicMaterial
-          transparent
-          opacity={0.78}
-          blending={
-            THREE.AdditiveBlending
-          }
-          depthWrite={false}
-        />
-      </instancedMesh>
-    </group>
+      <meshBasicMaterial
+        transparent
+        opacity={0.78}
+        blending={
+          THREE.AdditiveBlending
+        }
+        depthWrite={false}
+      />
+    </instancedMesh>
   );
 }
