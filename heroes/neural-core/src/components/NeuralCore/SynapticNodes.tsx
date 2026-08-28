@@ -1,121 +1,271 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef } from 'react';
-import { ThreeEvent, useFrame } from '@react-three/fiber';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
+
+import {
+  useFrame,
+  ThreeEvent,
+} from '@react-three/fiber';
+
 import * as THREE from 'three';
-import { SignalPropagator } from '../../core/3d/synaptic/SignalPropagator';
-import { SpatialGrid } from '../../core/3d/synaptic/SpatialGrid';
-import { SynapticNetworkRef } from '../../core/3d/synaptic/SynapticNetwork';
+
+import {
+  SignalPropagator,
+} from '../../core/3d/synaptic/SignalPropagator';
+
+import {
+  SpatialGrid,
+} from '../../core/3d/synaptic/SpatialGrid';
+
+
+/* =========================================================
+   SHARED NETWORK TYPES
+   ========================================================= */
+
+export interface SynapticNetworkState {
+  positions: Float32Array | null;
+
+  adjacency:
+    Map<number, number[]> | null;
+
+  edges:
+    Array<[number, number]>;
+
+  signalIntensities:
+    Map<number, number>;
+
+  nodeCount:
+    number;
+}
+
+export type SynapticNetworkRef =
+  React.MutableRefObject<SynapticNetworkState>;
+
+
+/* =========================================================
+   PROPS
+   ========================================================= */
 
 interface SynapticNodesProps {
   count?: number;
+
   interactionRadius?: number;
+
   attractionStrength?: number;
+
   primaryColor?: string;
+
   secondaryColor?: string;
-  onNodeClick?: (nodeId: number) => void;
+
+  onNodeClick?: (
+    nodeId: number
+  ) => void;
+
   networkRef?: SynapticNetworkRef;
 }
 
-const MAX_GRAPH_NODES = 1000;
-const MAX_CONNECTIONS_PER_NODE = 5;
+
+/* =========================================================
+   COMPONENT
+   ========================================================= */
 
 export function SynapticNodes({
   count = 3500,
+
   interactionRadius = 2.5,
+
   attractionStrength = 0.25,
+
   primaryColor = '#00F0FF',
+
   secondaryColor = '#A040FF',
+
   onNodeClick,
+
   networkRef,
 }: SynapticNodesProps) {
-  const nodeMeshRef = useRef<THREE.InstancedMesh>(null);
-  const connectionRef = useRef<THREE.LineSegments>(null);
 
-  const signalPropagator = useMemo(
-    () => new SignalPropagator(),
-    []
-  );
+  const meshRef =
+    useRef<THREE.InstancedMesh>(null);
 
-  const spatialGrid = useMemo(
-    () => new SpatialGrid(2.5),
-    []
-  );
 
-  const pointerWorld = useRef(new THREE.Vector3());
-  const pointerTarget = useRef(new THREE.Vector3());
+  /* ---------------------------------------------------------
+     Simulation systems
+     --------------------------------------------------------- */
 
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  const color = useMemo(() => new THREE.Color(), []);
+  const signalPropagator =
+    useMemo(
+      () => new SignalPropagator(),
+      []
+    );
 
-  const neighborBuffer = useMemo<number[]>(
-    () => [],
-    []
-  );
+  const spatialGrid =
+    useMemo(
+      () => new SpatialGrid(1.6),
+      []
+    );
 
-  /*
-   * ---------------------------------------------------------
-   * NODE GENERATION
-   * ---------------------------------------------------------
-   */
+
+  /* ---------------------------------------------------------
+     Mouse
+     --------------------------------------------------------- */
+
+  const currentPointerWorld =
+    useRef(
+      new THREE.Vector3(
+        0,
+        0,
+        0
+      )
+    );
+
+
+  /* ---------------------------------------------------------
+     Reusable objects
+     --------------------------------------------------------- */
+
+  const reusableDummy =
+    useMemo(
+      () => new THREE.Object3D(),
+      []
+    );
+
+  const reusableColor =
+    useMemo(
+      () => new THREE.Color(),
+      []
+    );
+
+  const neighborBuffer =
+    useMemo(
+      () => new Array<number>(),
+      []
+    );
+
+
+  /* =========================================================
+     GENERATE NETWORK
+     ========================================================= */
 
   const {
     initialPositions,
+
     currentPositions,
-    velocities,
+
     scales,
+
     baseColors,
+
     adjacencyList,
+
     edgePairs,
+
   } = useMemo(() => {
-    const initial = new Float32Array(count * 3);
-    const current = new Float32Array(count * 3);
 
-    const velocity = new Float32Array(count * 3);
-    const nodeScales = new Float32Array(count);
+    const initPos =
+      new Float32Array(
+        count * 3
+      );
 
-    const colors = new Float32Array(count * 3);
+    const currPos =
+      new Float32Array(
+        count * 3
+      );
 
-    const graph = new Map<number, number[]>();
-    const edges: Array<[number, number]> = [];
+    const scs =
+      new Float32Array(
+        count
+      );
 
-    const c1 = new THREE.Color(primaryColor);
-    const c2 = new THREE.Color(secondaryColor);
+    const cols =
+      new Float32Array(
+        count * 3
+      );
 
-    const numAxons = 6;
 
-    const axonAngles = Array.from(
-      { length: numAxons },
-      (_, i) => (i / numAxons) * Math.PI * 2
-    );
+    const graph =
+      new Map<
+        number,
+        number[]
+      >();
 
-    /*
-     * Generate structured neural distribution
-     */
 
-    for (let i = 0; i < count; i++) {
+    const edges:
+      Array<[number, number]> =
+      [];
+
+
+    const c1 =
+      new THREE.Color(
+        primaryColor
+      );
+
+    const c2 =
+      new THREE.Color(
+        secondaryColor
+      );
+
+
+    /* -------------------------------------------------------
+       Neural geometry
+
+       IMPORTANT:
+       We keep the majority of nodes around the central
+       structure instead of creating enormous outward arms.
+       ------------------------------------------------------- */
+
+    for (
+      let i = 0;
+      i < count;
+      i++
+    ) {
+
       let x = 0;
+
       let y = 0;
+
       let z = 0;
 
-      let scale = 0.015;
+      let scale =
+        0.015;
 
-      const type = Math.random();
 
-      /*
-       * CENTRAL CORE
-       */
+      const type =
+        Math.random();
 
-      if (type < 0.32) {
+
+      /* -----------------------------------------------------
+         CENTRAL CLOUD
+         ----------------------------------------------------- */
+
+      if (
+        type < 0.68
+      ) {
+
         const radius =
-          0.6 +
-          Math.pow(Math.random(), 0.55) * 1.7;
+          0.45 +
+          Math.cbrt(
+            Math.random()
+          ) * 2.25;
+
 
         const theta =
-          Math.random() * Math.PI * 2;
+          Math.random() *
+          Math.PI *
+          2;
+
 
         const phi =
-          Math.acos(2 * Math.random() - 1);
+          Math.acos(
+            2 *
+            Math.random() -
+            1
+          );
+
 
         x =
           radius *
@@ -131,247 +281,356 @@ export function SynapticNodes({
           radius *
           Math.cos(phi);
 
+
         scale =
-          0.018 +
-          Math.random() * 0.018;
+          0.014 +
+          Math.random() *
+          0.014;
+
       }
 
-      /*
-       * NEURAL AXONS
-       */
+
+      /* -----------------------------------------------------
+         SHORT AXON-LIKE STRUCTURES
+         ----------------------------------------------------- */
 
       else {
-        const axon =
+
+        const numAxons =
+          6;
+
+        const axonIndex =
           Math.floor(
-            Math.random() * numAxons
+            Math.random() *
+            numAxons
           );
 
-        const baseAngle =
-          axonAngles[axon];
+
+        const angle =
+          (
+            axonIndex /
+            numAxons
+          ) *
+          Math.PI *
+          2;
+
+
+        /*
+         * Deliberately limited length.
+         *
+         * Previous implementation could create huge arms
+         * reaching outside the camera frame.
+         */
 
         const distance =
-          1.4 +
-          Math.pow(Math.random(), 1.4) * 6;
+          1.2 +
+          Math.pow(
+            Math.random(),
+            1.8
+          ) *
+          2.8;
+
 
         const spiral =
-          distance * 1.15;
+          distance *
+          1.35;
+
 
         const dispersion =
-          0.15 +
-          distance * 0.09;
+          0.10 +
+          distance *
+          0.055;
+
 
         x =
-          Math.cos(baseAngle) *
-            distance +
+          Math.cos(angle) *
+          distance +
           Math.cos(spiral) *
-            dispersion;
+          dispersion;
+
 
         y =
-          Math.sin(baseAngle) *
-            distance +
+          Math.sin(angle) *
+          distance +
           Math.sin(spiral) *
-            dispersion;
+          dispersion;
+
 
         z =
-          (Math.random() - 0.5) *
+          (
+            Math.random() -
+            0.5
+          ) *
           distance *
-          0.35;
+          0.22;
+
 
         scale =
           0.011 +
-          Math.random() * 0.014;
+          Math.random() *
+          0.011;
+
       }
 
-      initial[i * 3] = x;
-      initial[i * 3 + 1] = y;
-      initial[i * 3 + 2] = z;
 
-      current[i * 3] = x;
-      current[i * 3 + 1] = y;
-      current[i * 3 + 2] = z;
+      /* -----------------------------------------------------
+         Store position
+         ----------------------------------------------------- */
 
-      /*
-       * Small initial velocity.
-       */
+      const index =
+        i * 3;
 
-      velocity[i * 3] =
-        (Math.random() - 0.5) * 0.015;
 
-      velocity[i * 3 + 1] =
-        (Math.random() - 0.5) * 0.015;
+      initPos[index] =
+        x;
 
-      velocity[i * 3 + 2] =
-        (Math.random() - 0.5) * 0.015;
+      initPos[index + 1] =
+        y;
 
-      nodeScales[i] = scale;
+      initPos[index + 2] =
+        z;
 
-      /*
-       * Gradient node color.
-       */
 
-      color.copy(c1).lerp(
-        c2,
-        Math.random()
+      currPos[index] =
+        x;
+
+      currPos[index + 1] =
+        y;
+
+      currPos[index + 2] =
+        z;
+
+
+      scs[i] =
+        scale;
+
+
+      /* -----------------------------------------------------
+         Color interpolation
+         ----------------------------------------------------- */
+
+      reusableColor
+        .copy(c1)
+        .lerp(
+          c2,
+          Math.random()
+        );
+
+
+      cols[index] =
+        reusableColor.r;
+
+      cols[index + 1] =
+        reusableColor.g;
+
+      cols[index + 2] =
+        reusableColor.b;
+
+
+      graph.set(
+        i,
+        []
       );
 
-      colors[i * 3] = color.r;
-      colors[i * 3 + 1] = color.g;
-      colors[i * 3 + 2] = color.b;
-
-      graph.set(i, []);
     }
 
-    /*
-     * -------------------------------------------------------
-     * BUILD SPATIAL GRID
-     * -------------------------------------------------------
-     */
+
+    /* =======================================================
+       SPATIAL GRID
+
+       This avoids O(N²) graph construction.
+       ======================================================= */
 
     spatialGrid.buildGrid(
-      initial,
+      initPos,
       count
     );
 
-    /*
-     * Only build the visible network from a controlled
-     * number of nodes.
-     */
 
-    const graphNodeCount =
-      Math.min(
-        count,
-        MAX_GRAPH_NODES
-      );
+    /* =======================================================
+       CONNECTION GRAPH
+
+       Local connections only.
+
+       Maximum degree keeps the network readable.
+       ======================================================= */
+
+    const MAX_DEGREE =
+      4;
+
+    const CONNECTION_RADIUS =
+      1.55;
+
 
     for (
       let i = 0;
-      i < graphNodeCount;
+      i < count;
       i++
     ) {
-      const neighbors: number[] = [];
+
+      const neighbors:
+        number[] =
+        [];
+
 
       spatialGrid.getNeighbors(
-        initial[i * 3],
-        initial[i * 3 + 1],
-        initial[i * 3 + 2],
-        2.2,
+        initPos[i * 3],
+        initPos[i * 3 + 1],
+        initPos[i * 3 + 2],
+        CONNECTION_RADIUS,
         neighbors
       );
 
-      /*
-       * Sort by distance so we prefer
-       * the closest neural neighbors.
-       */
 
-      neighbors.sort((a, b) => {
-        const ax =
-          initial[a * 3] -
-          initial[i * 3];
+      for (
+        let k = 0;
+        k < neighbors.length;
+        k++
+      ) {
 
-        const ay =
-          initial[a * 3 + 1] -
-          initial[i * 3 + 1];
+        const j =
+          neighbors[k];
 
-        const az =
-          initial[a * 3 + 2] -
-          initial[i * 3 + 2];
 
-        const bx =
-          initial[b * 3] -
-          initial[i * 3];
+        /*
+         * Prevent duplicate edges.
+         */
 
-        const by =
-          initial[b * 3 + 1] -
-          initial[i * 3 + 1];
-
-        const bz =
-          initial[b * 3 + 2] -
-          initial[i * 3 + 2];
-
-        return (
-          ax * ax +
-          ay * ay +
-          az * az -
-          (bx * bx +
-            by * by +
-            bz * bz)
-        );
-      });
-
-      let connectionCount = 0;
-
-      for (const j of neighbors) {
         if (
-          j <= i ||
-          j >= graphNodeCount
+          j <= i
         ) {
           continue;
         }
 
+
         if (
-          connectionCount >=
-          MAX_CONNECTIONS_PER_NODE
+          graph.get(i)!.length >=
+          MAX_DEGREE
         ) {
           break;
         }
 
-        graph.get(i)!.push(j);
-        graph.get(j)!.push(i);
 
-        edges.push([i, j]);
+        if (
+          graph.get(j)!.length >=
+          MAX_DEGREE
+        ) {
+          continue;
+        }
 
-        connectionCount++;
+
+        graph
+          .get(i)!
+          .push(j);
+
+
+        graph
+          .get(j)!
+          .push(i);
+
+
+        edges.push(
+          [i, j]
+        );
+
       }
+
     }
 
-    if (networkRef) {
-      networkRef.current = {
-        positions: current,
-        adjacency: graph,
-        edges,
-        nodeCount: count,
-      };
-    }
 
     return {
-      initialPositions: initial,
-      currentPositions: current,
-      velocities: velocity,
-      scales: nodeScales,
-      baseColors: colors,
-      adjacencyList: graph,
-      edgePairs: edges,
+
+      initialPositions:
+        initPos,
+
+      currentPositions:
+        currPos,
+
+      scales:
+        scs,
+
+      baseColors:
+        cols,
+
+      adjacencyList:
+        graph,
+
+      edgePairs:
+        edges,
+
     };
+
   }, [
     count,
     primaryColor,
     secondaryColor,
     spatialGrid,
+    reusableColor,
   ]);
 
-  useEffect(() => {
-    if (!networkRef) return;
 
-    networkRef.current.positions =
+  /* =========================================================
+     PUBLISH SHARED NETWORK
+     ========================================================= */
+
+  useEffect(() => {
+
+    if (!networkRef) {
+      return;
+    }
+
+
+    networkRef.current
+      .positions =
       currentPositions;
 
-    networkRef.current.adjacency =
+
+    networkRef.current
+      .adjacency =
       adjacencyList;
 
-    networkRef.current.edges =
+
+    networkRef.current
+      .edges =
       edgePairs;
 
-    networkRef.current.nodeCount =
+
+    networkRef.current
+      .nodeCount =
       count;
 
+
     return () => {
-      if (networkRef.current.positions === currentPositions) {
-        networkRef.current.positions = null;
-        networkRef.current.adjacency = null;
-        networkRef.current.edges = [];
-        networkRef.current.nodeCount = 0;
+
+      if (
+        networkRef.current
+          .positions ===
+        currentPositions
+      ) {
+
+        networkRef.current
+          .positions =
+          null;
+
+        networkRef.current
+          .adjacency =
+          null;
+
+        networkRef.current
+          .edges =
+          [];
+
+        networkRef.current
+          .signalIntensities
+          .clear();
+
+        networkRef.current
+          .nodeCount =
+          0;
       }
+
     };
+
   }, [
     networkRef,
     currentPositions,
@@ -380,654 +639,613 @@ export function SynapticNodes({
     count,
   ]);
 
-  /*
-   * ---------------------------------------------------------
-   * INITIAL NODE MATRICES + COLORS
-   * ---------------------------------------------------------
-   */
+
+  /* =========================================================
+     INITIAL INSTANCE SETUP
+     ========================================================= */
 
   useEffect(() => {
+
     const mesh =
-      nodeMeshRef.current;
+      meshRef.current;
 
-    if (!mesh) return;
 
-    const instanceColors =
+    if (!mesh) {
+      return;
+    }
+
+
+    const colorAttribute =
       new THREE.InstancedBufferAttribute(
-        new Float32Array(baseColors),
+        new Float32Array(
+          baseColors
+        ),
         3
       );
 
+
     mesh.instanceColor =
-      instanceColors;
+      colorAttribute;
+
 
     for (
       let i = 0;
       i < count;
       i++
     ) {
-      dummy.position.set(
-        initialPositions[i * 3],
-        initialPositions[i * 3 + 1],
-        initialPositions[i * 3 + 2]
+
+      const index =
+        i * 3;
+
+
+      reusableDummy.position.set(
+        initialPositions[index],
+        initialPositions[index + 1],
+        initialPositions[index + 2]
       );
 
-      dummy.scale.setScalar(
+
+      reusableDummy.scale.setScalar(
         scales[i]
       );
 
-      dummy.updateMatrix();
+
+      reusableDummy.updateMatrix();
+
 
       mesh.setMatrixAt(
         i,
-        dummy.matrix
+        reusableDummy.matrix
       );
+
     }
 
-    mesh.instanceMatrix.needsUpdate =
+
+    mesh.instanceMatrix
+      .needsUpdate =
       true;
 
-    instanceColors.needsUpdate =
-      true;
+
   }, [
     count,
     initialPositions,
-    baseColors,
     scales,
-    dummy,
+    baseColors,
+    reusableDummy,
   ]);
 
-  /*
-   * ---------------------------------------------------------
-   * CONNECTION GEOMETRY
-   * ---------------------------------------------------------
-   */
 
-  const connectionGeometry =
-    useMemo(() => {
-      const positions =
-        new Float32Array(
-          edgePairs.length * 6
+  /* =========================================================
+     CLICK
+     ========================================================= */
+
+  const handlePointerDown =
+    (
+      event: ThreeEvent<MouseEvent>
+    ) => {
+
+      event.stopPropagation();
+
+
+      if (
+        event.instanceId ===
+        undefined
+      ) {
+        return;
+      }
+
+
+      const nodeId =
+        event.instanceId;
+
+
+      signalPropagator
+        .triggerSignal(
+          nodeId,
+          adjacencyList
         );
 
-      const colors =
-        new Float32Array(
-          edgePairs.length * 6
-        );
 
-      return {
-        positions,
-        colors,
-      };
-    }, [edgePairs]);
-
-  /*
-   * ---------------------------------------------------------
-   * CLICK
-   * ---------------------------------------------------------
-   */
-
-  const handlePointerDown = (
-    event: ThreeEvent<MouseEvent>
-  ) => {
-    event.stopPropagation();
-
-    if (
-      event.instanceId === undefined
-    ) {
-      return;
-    }
-
-    const nodeId =
-      event.instanceId;
-
-    signalPropagator.triggerSignal(
-      nodeId,
-      adjacencyList
-    );
-
-    onNodeClick?.(nodeId);
-  };
-
-  /*
-   * ---------------------------------------------------------
-   * FRAME LOOP
-   * ---------------------------------------------------------
-   */
-
-  useFrame(
-    (state, delta) => {
-      const mesh =
-        nodeMeshRef.current;
-
-      if (!mesh) return;
-
-      const elapsed =
-        state.clock.elapsedTime;
-
-      /*
-       * -----------------------------------------------------
-       * POINTER
-       * -----------------------------------------------------
-       */
-
-      pointerTarget.current.set(
-        state.pointer.x * 6,
-        state.pointer.y * 4,
-        0
+      onNodeClick?.(
+        nodeId
       );
 
-      pointerWorld.current.x =
+    };
+
+
+  /* =========================================================
+     FRAME LOOP
+     ========================================================= */
+
+  useFrame(
+    (
+      state,
+      delta
+    ) => {
+
+      const mesh =
+        meshRef.current;
+
+
+      if (!mesh) {
+        return;
+      }
+
+
+      /* -----------------------------------------------------
+         Mouse → approximate world coordinates
+         ----------------------------------------------------- */
+
+      const targetX =
+        state.pointer.x *
+        5.2;
+
+
+      const targetY =
+        state.pointer.y *
+        3.8;
+
+
+      currentPointerWorld.current.x =
         THREE.MathUtils.damp(
-          pointerWorld.current.x,
-          pointerTarget.current.x,
+          currentPointerWorld.current.x,
+          targetX,
           5,
           delta
         );
 
-      pointerWorld.current.y =
+
+      currentPointerWorld.current.y =
         THREE.MathUtils.damp(
-          pointerWorld.current.y,
-          pointerTarget.current.y,
+          currentPointerWorld.current.y,
+          targetY,
           5,
           delta
         );
 
-      /*
-       * -----------------------------------------------------
-       * SIGNALS
-       * -----------------------------------------------------
-       */
+
+      /* -----------------------------------------------------
+         Signal propagation
+         ----------------------------------------------------- */
 
       const activeSignals =
         signalPropagator.update(
           delta
         );
 
-      const instanceColors =
-        mesh.instanceColor;
 
-      /*
-       * -----------------------------------------------------
-       * FIND NEARBY NODES
-       * -----------------------------------------------------
-       */
+      if (networkRef) {
 
-      const nearbyCount =
+        networkRef.current
+          .signalIntensities =
+          activeSignals;
+
+      }
+
+
+      /* -----------------------------------------------------
+         Find nearby particles
+
+         Spatial grid prevents scanning every particle
+         for cursor interaction.
+         ----------------------------------------------------- */
+
+      const numNear =
         spatialGrid.getNeighbors(
-          pointerWorld.current.x,
-          pointerWorld.current.y,
-          pointerWorld.current.z,
+          currentPointerWorld.current.x,
+          currentPointerWorld.current.y,
+          0,
           interactionRadius,
           neighborBuffer
         );
 
-      /*
-       * Clear/reuse a Set only for nearby
-       * nodes. This avoids checking every
-       * node against the cursor.
-       */
 
-      const nearbySet =
-        new Set<number>();
+      /* -----------------------------------------------------
+         Process only nearby particles
+         ----------------------------------------------------- */
 
       for (
-        let i = 0;
-        i < nearbyCount;
-        i++
+        let n = 0;
+        n < numNear;
+        n++
       ) {
-        nearbySet.add(
-          neighborBuffer[i]
-        );
+
+        const i =
+          neighborBuffer[n];
+
+
+        if (
+          i < 0 ||
+          i >= count
+        ) {
+          continue;
+        }
+
+
+        const index =
+          i * 3;
+
+
+        const ix =
+          initialPositions[index];
+
+        const iy =
+          initialPositions[index + 1];
+
+        const iz =
+          initialPositions[index + 2];
+
+
+        const dx =
+          ix -
+          currentPointerWorld.current.x;
+
+
+        const dy =
+          iy -
+          currentPointerWorld.current.y;
+
+
+        const distSq =
+          dx * dx +
+          dy * dy;
+
+
+        if (
+          distSq >
+          interactionRadius *
+          interactionRadius
+        ) {
+          continue;
+        }
+
+
+        if (
+          distSq <=
+          0.0001
+        ) {
+          continue;
+        }
+
+
+        const dist =
+          Math.sqrt(
+            distSq
+          );
+
+
+        const factor =
+          1 -
+          dist /
+          interactionRadius;
+
+
+        /*
+         * Cursor pushes nearby particles outward.
+         */
+
+        const targetX =
+          ix +
+          (
+            dx /
+            dist
+          ) *
+          factor *
+          attractionStrength;
+
+
+        const targetY =
+          iy +
+          (
+            dy /
+            dist
+          ) *
+          factor *
+          attractionStrength;
+
+
+        currentPositions[index] =
+          THREE.MathUtils.damp(
+            currentPositions[index],
+            targetX,
+            7,
+            delta
+          );
+
+
+        currentPositions[index + 1] =
+          THREE.MathUtils.damp(
+            currentPositions[index + 1],
+            targetY,
+            7,
+            delta
+          );
+
+
+        currentPositions[index + 2] =
+          THREE.MathUtils.damp(
+            currentPositions[index + 2],
+            iz,
+            7,
+            delta
+          );
+
       }
 
-      /*
-       * -----------------------------------------------------
-       * UPDATE NODES
-       * -----------------------------------------------------
-       */
+
+      /* -----------------------------------------------------
+         Return all particles to their base position.
+
+         This is intentionally done in a separate pass so
+         particles smoothly recover after cursor interaction.
+         ----------------------------------------------------- */
 
       for (
         let i = 0;
         i < count;
         i++
       ) {
-        const index = i * 3;
 
-        const baseX =
-          initialPositions[index];
+        const index =
+          i * 3;
 
-        const baseY =
-          initialPositions[index + 1];
 
-        const baseZ =
-          initialPositions[index + 2];
+        const signal =
+          activeSignals.get(
+            i
+          ) ?? 0;
 
-        let targetX = baseX;
-        let targetY = baseY;
-        let targetZ = baseZ;
 
         /*
-         * Organic idle movement.
-         */
-
-        const idleX =
-          Math.sin(
-            elapsed * 0.45 +
-            i * 0.17
-          ) * 0.012;
-
-        const idleY =
-          Math.cos(
-            elapsed * 0.37 +
-            i * 0.11
-          ) * 0.012;
-
-        const idleZ =
-          Math.sin(
-            elapsed * 0.31 +
-            i * 0.07
-          ) * 0.008;
-
-        targetX += idleX;
-        targetY += idleY;
-        targetZ += idleZ;
-
-        /*
-         * ---------------------------------------------------
-         * CURSOR FORCE
-         * ---------------------------------------------------
+         * If particle isn't near cursor, smoothly return.
          */
 
         if (
-          nearbySet.has(i)
+          !neighborBuffer
+            .slice(
+              0,
+              numNear
+            )
+            .includes(i)
         ) {
+
+          currentPositions[index] =
+            THREE.MathUtils.damp(
+              currentPositions[index],
+              initialPositions[index],
+              3.5,
+              delta
+            );
+
+
+          currentPositions[index + 1] =
+            THREE.MathUtils.damp(
+              currentPositions[index + 1],
+              initialPositions[index + 1],
+              3.5,
+              delta
+            );
+
+
+          currentPositions[index + 2] =
+            THREE.MathUtils.damp(
+              currentPositions[index + 2],
+              initialPositions[index + 2],
+              3.5,
+              delta
+            );
+
+        }
+
+
+        /* ---------------------------------------------------
+           Scale
+           --------------------------------------------------- */
+
+        let scale =
+          scales[i];
+
+
+        scale *=
+          1 +
+          signal *
+          1.25;
+
+
+        if (
+          signal === 0
+        ) {
+
           const dx =
-            baseX -
-            pointerWorld.current.x;
+            initialPositions[index] -
+            currentPointerWorld.current.x;
 
           const dy =
-            baseY -
-            pointerWorld.current.y;
+            initialPositions[index + 1] -
+            currentPointerWorld.current.y;
 
-          const distanceSq =
-            dx * dx +
-            dy * dy;
+
+          const distance =
+            Math.sqrt(
+              dx * dx +
+              dy * dy
+            );
+
 
           if (
-            distanceSq <
-              interactionRadius *
-                interactionRadius &&
-            distanceSq > 0.00001
+            distance <
+            interactionRadius
           ) {
-            const distance =
-              Math.sqrt(
-                distanceSq
-              );
 
-            const normalized =
+            const factor =
               1 -
               distance /
-                interactionRadius;
+              interactionRadius;
 
-            /*
-             * Smooth falloff.
-             */
 
-            const falloff =
-              normalized *
-              normalized;
+            scale *=
+              1 +
+              factor *
+              0.7;
 
-            /*
-             * REPULSION
-             *
-             * Nodes push away from
-             * the cursor.
-             */
-
-            targetX +=
-              (dx / distance) *
-              falloff *
-              attractionStrength;
-
-            targetY +=
-              (dy / distance) *
-              falloff *
-              attractionStrength;
-
-            /*
-             * Slight Z displacement
-             * creates depth.
-             */
-
-            targetZ +=
-              falloff * 0.15;
-
-            /*
-             * Cursor proximity increases
-             * node scale.
-             */
-
-            const scale =
-              scales[i] *
-              (1 +
-                falloff *
-                  1.4);
-
-            dummy.scale.setScalar(
-              scale
-            );
-          } else {
-            dummy.scale.setScalar(
-              scales[i]
-            );
           }
-        } else {
-          dummy.scale.setScalar(
-            scales[i]
-          );
+
         }
 
-        /*
-         * ---------------------------------------------------
-         * SPRING BACK TO BASE POSITION
-         * ---------------------------------------------------
-         */
 
-        currentPositions[index] =
-          THREE.MathUtils.damp(
-            currentPositions[index],
-            targetX,
-            5.5,
-            delta
-          );
+        /* ---------------------------------------------------
+           Update instance matrix
+           --------------------------------------------------- */
 
-        currentPositions[index + 1] =
-          THREE.MathUtils.damp(
-            currentPositions[index + 1],
-            targetY,
-            5.5,
-            delta
-          );
-
-        currentPositions[index + 2] =
-          THREE.MathUtils.damp(
-            currentPositions[index + 2],
-            targetZ,
-            5.5,
-            delta
-          );
-
-        /*
-         * ---------------------------------------------------
-         * SIGNAL RESPONSE
-         * ---------------------------------------------------
-         */
-
-        const signalIntensity =
-          activeSignals.get(i) ??
-          0;
-
-        if (
-          instanceColors
-        ) {
-          const r =
-            baseColors[index];
-
-          const g =
-            baseColors[index + 1];
-
-          const b =
-            baseColors[index + 2];
-
-          /*
-           * Signal turns node toward
-           * white.
-           */
-
-          instanceColors.setXYZ(
-            i,
-            THREE.MathUtils.lerp(
-              r,
-              1,
-              signalIntensity
-            ),
-            THREE.MathUtils.lerp(
-              g,
-              1,
-              signalIntensity
-            ),
-            THREE.MathUtils.lerp(
-              b,
-              1,
-              signalIntensity
-            )
-          );
-        }
-
-        /*
-         * ---------------------------------------------------
-         * WRITE INSTANCE MATRIX
-         * ---------------------------------------------------
-         */
-
-        dummy.position.set(
+        reusableDummy.position.set(
           currentPositions[index],
           currentPositions[index + 1],
           currentPositions[index + 2]
         );
 
-        dummy.updateMatrix();
+
+        reusableDummy.scale.setScalar(
+          scale
+        );
+
+
+        reusableDummy.updateMatrix();
+
 
         mesh.setMatrixAt(
           i,
-          dummy.matrix
+          reusableDummy.matrix
         );
-      }
 
-      mesh.instanceMatrix.needsUpdate =
-        true;
 
-      if (instanceColors) {
-        instanceColors.needsUpdate =
-          true;
-      }
+        /* ---------------------------------------------------
+           Update instance color
+           --------------------------------------------------- */
 
-      /*
-       * -----------------------------------------------------
-       * UPDATE NEURAL CONNECTIONS
-       * -----------------------------------------------------
-       */
+        const instanceColors =
+          mesh.instanceColor;
 
-      const line =
-        connectionRef.current;
 
-      if (line) {
-        const positionAttribute =
-          line.geometry.getAttribute(
-            'position'
-          ) as THREE.BufferAttribute;
-
-        const colorAttribute =
-          line.geometry.getAttribute(
-            'color'
-          ) as THREE.BufferAttribute;
-
-        for (
-          let e = 0;
-          e < edgePairs.length;
-          e++
+        if (
+          instanceColors
         ) {
-          const [
-            a,
-            b,
-          ] = edgePairs[e];
 
-          const aIndex =
-            a * 3;
+          if (
+            signal > 0
+          ) {
 
-          const bIndex =
-            b * 3;
+            instanceColors.setXYZ(
+              i,
 
-          /*
-           * Endpoint A
-           */
+              THREE.MathUtils.lerp(
+                baseColors[index],
+                1,
+                signal
+              ),
 
-          positionAttribute.setXYZ(
-            e * 2,
-            currentPositions[aIndex],
-            currentPositions[aIndex + 1],
-            currentPositions[aIndex + 2]
-          );
+              THREE.MathUtils.lerp(
+                baseColors[index + 1],
+                1,
+                signal
+              ),
 
-          /*
-           * Endpoint B
-           */
+              THREE.MathUtils.lerp(
+                baseColors[index + 2],
+                1,
+                signal
+              )
 
-          positionAttribute.setXYZ(
-            e * 2 + 1,
-            currentPositions[bIndex],
-            currentPositions[bIndex + 1],
-            currentPositions[bIndex + 2]
-          );
-
-          const signalA =
-            activeSignals.get(a) ??
-            0;
-
-          const signalB =
-            activeSignals.get(b) ??
-            0;
-
-          const signal =
-            Math.max(
-              signalA,
-              signalB
             );
 
-          /*
-           * Normal connections are very subtle.
-           */
+          }
+          else {
 
-          const baseIntensity =
-            0.12;
+            instanceColors.setXYZ(
+              i,
+              baseColors[index],
+              baseColors[index + 1],
+              baseColors[index + 2]
+            );
 
-          const intensity =
-            baseIntensity +
-            signal * 0.88;
+          }
 
-          colorAttribute.setXYZ(
-            e * 2,
-            intensity,
-            intensity,
-            intensity
-          );
-
-          colorAttribute.setXYZ(
-            e * 2 + 1,
-            intensity,
-            intensity,
-            intensity
-          );
         }
 
-        positionAttribute.needsUpdate =
-          true;
-
-        colorAttribute.needsUpdate =
-          true;
       }
 
-      /*
-       * Very slow global movement.
-       */
+
+      mesh.instanceMatrix
+        .needsUpdate =
+        true;
+
+
+      if (
+        mesh.instanceColor
+      ) {
+
+        mesh.instanceColor
+          .needsUpdate =
+          true;
+
+      }
+
+
+      /* -----------------------------------------------------
+         Very subtle autonomous movement.
+         ----------------------------------------------------- */
 
       mesh.rotation.y =
-        elapsed * 0.018;
+        state.clock.elapsedTime *
+        0.012;
+
 
       mesh.rotation.x =
         Math.sin(
-          elapsed * 0.08
-        ) * 0.035;
+          state.clock.elapsedTime *
+          0.08
+        ) *
+        0.018;
 
-      if (line) {
-        line.rotation.y =
-          mesh.rotation.y;
-
-        line.rotation.x =
-          mesh.rotation.x;
-      }
     }
   );
 
-  /*
-   * ---------------------------------------------------------
-   * RENDER
-   * ---------------------------------------------------------
-   */
+
+  /* =========================================================
+     RENDER
+     ========================================================= */
 
   return (
-    <group>
-      {/* Neural connections */}
 
-      <lineSegments
-        ref={connectionRef}
-      >
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[
-              connectionGeometry.positions,
-              3,
-            ]}
-          />
+    <instancedMesh
+      ref={meshRef}
+      args={[
+        undefined,
+        undefined,
+        count,
+      ]}
+      onPointerDown={
+        handlePointerDown
+      }
+    >
 
-          <bufferAttribute
-            attach="attributes-color"
-            args={[
-              connectionGeometry.colors,
-              3,
-            ]}
-          />
-        </bufferGeometry>
-
-        <lineBasicMaterial
-          vertexColors
-          transparent
-          opacity={0.18}
-          blending={
-            THREE.AdditiveBlending
-          }
-          depthWrite={false}
-        />
-      </lineSegments>
-
-      {/* Neural nodes */}
-
-      <instancedMesh
-        ref={nodeMeshRef}
+      <sphereGeometry
         args={[
-          undefined,
-          undefined,
-          count,
+          1,
+          6,
+          6,
         ]}
-        onPointerDown={
-          handlePointerDown
-        }
-      >
-        <sphereGeometry
-          args={[1, 6, 6]}
-        />
+      />
 
-        <meshBasicMaterial
-          transparent
-          opacity={0.8}
-          blending={
-            THREE.AdditiveBlending
-          }
-          depthWrite={false}
-        />
-      </instancedMesh>
-    </group>
+      <meshBasicMaterial
+        transparent
+        opacity={0.78}
+        blending={
+          THREE.AdditiveBlending
+        }
+        depthWrite={false}
+      />
+
+    </instancedMesh>
+
   );
 }

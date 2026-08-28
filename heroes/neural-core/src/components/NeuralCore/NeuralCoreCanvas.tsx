@@ -33,6 +33,7 @@ export function NeuralCoreCanvas({
     positions: null,
     adjacency: null,
     edges: [],
+    signalIntensities: new Map(),
     nodeCount: 0,
   });
 
