@@ -40,10 +40,6 @@ import {
   AmbientParticleField,
 } from './AmbientParticleField';
 
-import {
-  AmbientEnergyField,
-} from './AmbientEnergyField';
-
 
 /* =========================================================
    PROPS
@@ -306,18 +302,6 @@ function NeuralSystem({
         networkRef={
           networkRef
         }
-      />
-
-
-      {/* =================================================
-          AMBIENT ENERGY FIELD
-          ================================================= */}
-
-      <AmbientEnergyField
-        radius={2.4}
-        primaryColor={primaryColor}
-        secondaryColor={secondaryColor}
-        networkRef={networkRef}
       />
 
 
