@@ -380,6 +380,9 @@ export function ConnectionLines({
       const signals =
         network.signalIntensities;
 
+      const nearbyFlags =
+        network.nearbyFlags;
+
       const edgeCount =
         Math.min(
           edges.length,
@@ -443,16 +446,25 @@ export function ConnectionLines({
 
 
         /* -------------------------------------------------
-           Endpoint signal
+           Endpoint signal & cursor influence
            ------------------------------------------------- */
 
-        const signalA =
+        let signalA =
           signals.get(a) ??
           0;
 
-        const signalB =
+        let signalB =
           signals.get(b) ??
           0;
+
+        if (nearbyFlags) {
+          if (nearbyFlags[a] !== 0) {
+            signalA = Math.max(signalA, 0.28);
+          }
+          if (nearbyFlags[b] !== 0) {
+            signalB = Math.max(signalB, 0.35);
+          }
+        }
 
         signalAttribute.setX(
           vertexA,
@@ -705,7 +717,7 @@ export function ConnectionLines({
 
   /* =======================================================
      RENDER
-     ======================================================= */
+     ========================================================= */
 
   return (
 

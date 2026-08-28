@@ -43,6 +43,9 @@ export interface SynapticNetworkState {
 
   signalPropagator:
     SignalPropagator | null;
+
+  nearbyFlags?:
+    Uint8Array | null;
 }
 
 export type SynapticNetworkRef =
@@ -116,7 +119,7 @@ export function SynapticNodes({
      --------------------------------------------------------- */
 
   const autoTimerRef = useRef(0);
-  const nextAutoDelayRef = useRef(1.5); // Random delay between 1.2s and 3.5s
+  const nextAutoDelayRef = useRef(1.5);
 
   /* ---------------------------------------------------------
      Mouse
@@ -533,6 +536,9 @@ export function SynapticNodes({
     networkRef.current.signalPropagator =
       signalPropagator;
 
+    networkRef.current.nearbyFlags =
+      nearbyFlags;
+
     return () => {
 
       if (
@@ -555,6 +561,9 @@ export function SynapticNodes({
         networkRef.current.signalPropagator =
           null;
 
+        networkRef.current.nearbyFlags =
+          null;
+
         networkRef.current.nodeCount =
           0;
       }
@@ -568,6 +577,7 @@ export function SynapticNodes({
     edgePairs,
     count,
     signalPropagator,
+    nearbyFlags,
   ]);
 
 
@@ -705,10 +715,8 @@ export function SynapticNodes({
         connectedNodeIds.length > 0
       ) {
         autoTimerRef.current = 0;
-        // Irregular probabilistic delay between 1.5s and 4.2s
         nextAutoDelayRef.current = 1.5 + Math.random() * 2.7;
 
-        // Subtle speed (1.4 vs 2.4 manual click speed)
         const randomStartNode =
           connectedNodeIds[
             Math.floor(Math.random() * connectedNodeIds.length)
@@ -1086,6 +1094,38 @@ export function SynapticNodes({
                 baseColors[index + 2],
                 1,
                 signal
+              )
+
+            );
+
+          }
+
+          else if (
+            nearbyFlags[i] !== 0
+          ) {
+
+            /*
+             * Cursor influence slightly brightens nearby node.
+             */
+            instanceColors.setXYZ(
+              i,
+
+              THREE.MathUtils.lerp(
+                baseColors[index],
+                1,
+                0.35
+              ),
+
+              THREE.MathUtils.lerp(
+                baseColors[index + 1],
+                1,
+                0.35
+              ),
+
+              THREE.MathUtils.lerp(
+                baseColors[index + 2],
+                1,
+                0.35
               )
 
             );
