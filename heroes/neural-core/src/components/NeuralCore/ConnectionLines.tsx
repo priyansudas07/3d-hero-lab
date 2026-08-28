@@ -21,6 +21,7 @@ import type {
    ========================================================= */
 
 interface ConnectionLinesProps {
+
   networkRef:
     SynapticNetworkRef;
 
@@ -72,12 +73,25 @@ const fragmentShader = `
 
   void main() {
 
-    float base = 0.16;
+    /*
+     * Inactive network.
+     */
+
+    float base =
+      0.16;
+
+
+    /*
+     * Traveling pulse.
+     */
 
     float pulse =
-      sin(uTime * 4.0) *
+      sin(
+        uTime * 4.0
+      ) *
       0.5 +
       0.5;
+
 
     float signal =
       vSignal *
@@ -86,17 +100,25 @@ const fragmentShader = `
         pulse * 0.35
       );
 
+
+    /*
+     * Active connections become brighter.
+     */
+
     float intensity =
       base +
       signal * 2.2;
+
 
     vec3 finalColor =
       uColor *
       intensity;
 
+
     float alpha =
       0.055 +
       signal * 0.55;
+
 
     gl_FragColor =
       vec4(
@@ -117,8 +139,16 @@ export function ConnectionLines({
   networkRef,
   color = '#A040FF',
 }: ConnectionLinesProps) {
+
   const lineRef =
-    useRef<THREE.LineSegments>(null);
+    useRef<THREE.LineSegments>(
+      null
+    );
+
+
+  /* =======================================================
+     LIMIT
+     ======================================================= */
 
   const MAX_EDGES =
     2500;
@@ -130,18 +160,25 @@ export function ConnectionLines({
 
   const geometry =
     useMemo(() => {
+
       const positions =
         new Float32Array(
-          MAX_EDGES * 2 * 3
+          MAX_EDGES *
+          2 *
+          3
         );
+
 
       const signal =
         new Float32Array(
-          MAX_EDGES * 2
+          MAX_EDGES *
+          2
         );
+
 
       const geo =
         new THREE.BufferGeometry();
+
 
       geo.setAttribute(
         'position',
@@ -152,6 +189,7 @@ export function ConnectionLines({
         )
       );
 
+
       geo.setAttribute(
         'aSignal',
 
@@ -161,27 +199,37 @@ export function ConnectionLines({
         )
       );
 
-      geo.setDrawRange(0, 0);
+
+      geo.setDrawRange(
+        0,
+        0
+      );
+
 
       return geo;
+
     }, []);
 
 
   /* =======================================================
-     SHADER UNIFORMS
+     UNIFORMS
      ======================================================= */
 
   const uniforms =
     useMemo(
       () => ({
+
         uTime: {
           value: 0,
         },
 
         uColor: {
           value:
-            new THREE.Color(color),
+            new THREE.Color(
+              color
+            ),
         },
+
       }),
       [color]
     );
@@ -189,34 +237,38 @@ export function ConnectionLines({
 
   /* =======================================================
      FRAME LOOP
-     ========================================================= */
+     ======================================================= */
 
   useFrame(
     (state) => {
+
       const line =
         lineRef.current;
+
 
       if (!line) {
         return;
       }
 
 
-      const time =
-        state.clock.elapsedTime;
-
-
-      /* ---------------------------------------------------
-         NETWORK
-         --------------------------------------------------- */
-
       const network =
         networkRef.current;
+
+
+      /* ===================================================
+         NO NETWORK
+         =================================================== */
 
       if (
         !network.positions ||
         network.edges.length === 0
       ) {
-        geometry.setDrawRange(0, 0);
+
+        geometry.setDrawRange(
+          0,
+          0
+        );
+
         return;
       }
 
@@ -225,6 +277,7 @@ export function ConnectionLines({
         geometry.getAttribute(
           'position'
         ) as THREE.BufferAttribute;
+
 
       const signalAttribute =
         geometry.getAttribute(
@@ -235,8 +288,10 @@ export function ConnectionLines({
       const positions =
         network.positions;
 
+
       const edges =
         network.edges;
+
 
       const signals =
         network.signalIntensities;
@@ -249,60 +304,88 @@ export function ConnectionLines({
         );
 
 
-      /* ---------------------------------------------------
-         UPDATE EDGE POSITIONS
-         --------------------------------------------------- */
+      /* ===================================================
+         UPDATE CONNECTIONS
+         =================================================== */
 
       for (
         let i = 0;
         i < edgeCount;
         i++
       ) {
-        const [a, b] =
+
+        const [
+          a,
+          b,
+        ] =
           edges[i];
+
 
         const aIndex =
           a * 3;
 
+
         const bIndex =
           b * 3;
 
+
         const vertexA =
           i * 2;
+
 
         const vertexB =
           vertexA + 1;
 
 
+        /* -------------------------------------------------
+           A
+           ------------------------------------------------- */
+
         positionAttribute.setXYZ(
           vertexA,
 
           positions[aIndex],
+
           positions[aIndex + 1],
+
           positions[aIndex + 2]
         );
 
+
+        /* -------------------------------------------------
+           B
+           ------------------------------------------------- */
 
         positionAttribute.setXYZ(
           vertexB,
 
           positions[bIndex],
+
           positions[bIndex + 1],
+
           positions[bIndex + 2]
         );
 
 
+        /* -------------------------------------------------
+           SIGNAL
+           ------------------------------------------------- */
+
         const signalA =
-          signals.get(a) ?? 0;
+          signals.get(a) ??
+          0;
+
 
         const signalB =
-          signals.get(b) ?? 0;
+          signals.get(b) ??
+          0;
 
 
         signalAttribute.setX(
           vertexA,
           signalA
         );
+
 
         signalAttribute.setX(
           vertexB,
@@ -311,10 +394,13 @@ export function ConnectionLines({
       }
 
 
-      positionAttribute.needsUpdate =
+      positionAttribute
+        .needsUpdate =
         true;
 
-      signalAttribute.needsUpdate =
+
+      signalAttribute
+        .needsUpdate =
         true;
 
 
@@ -324,18 +410,25 @@ export function ConnectionLines({
       );
 
 
-      /* ---------------------------------------------------
-         SHADER TIME
-         --------------------------------------------------- */
+      /* ===================================================
+         SHADER
+         =================================================== */
 
       const material =
         line.material as THREE.ShaderMaterial;
 
-      material.uniforms.uTime.value =
-        time;
 
-      material.uniforms.uColor.value
+      material.uniforms
+        .uTime
+        .value =
+        state.clock.elapsedTime;
+
+
+      material.uniforms
+        .uColor
+        .value
         .set(color);
+
     }
   );
 
@@ -349,20 +442,32 @@ export function ConnectionLines({
       ref={lineRef}
       geometry={geometry}
     >
+
       <shaderMaterial
         vertexShader={
           vertexShader
         }
+
         fragmentShader={
           fragmentShader
         }
-        uniforms={uniforms}
+
+        uniforms={
+          uniforms
+        }
+
         transparent
+
         blending={
           THREE.AdditiveBlending
         }
-        depthWrite={false}
+
+        depthWrite={
+          false
+        }
+
       />
+
     </lineSegments>
   );
 }
