@@ -15,47 +15,131 @@ export function CoreMesh({
   secondaryColor = '#A040FF',
   rotationSpeed = 1.0,
 }: CoreMeshProps) {
+  const globalGroupRef = useRef<THREE.Group>(null);
   const outerWireRef = useRef<THREE.Mesh>(null);
   const innerCoreRef = useRef<THREE.Mesh>(null);
   const glowRef = useRef<THREE.Mesh>(null);
-  
-  const currentPointer = useRef(new THREE.Vector2(0, 0));
+
+  const pointer = useRef(new THREE.Vector2(0, 0));
 
   useFrame((state, delta) => {
     const time = state.clock.elapsedTime;
-    
-    // Smooth dampening mouse tilt target
-    const targetX = state.pointer.x * 0.35;
-    const targetY = state.pointer.y * 0.35;
 
-    currentPointer.current.x = THREE.MathUtils.damp(currentPointer.current.x, targetX, 4, delta);
-    currentPointer.current.y = THREE.MathUtils.damp(currentPointer.current.y, targetY, 4, delta);
+    /*
+     * -------------------------------------------------------
+     * GLOBAL 3D MOVEMENT
+     *
+     * This is deliberately applied to the complete core
+     * instead of only rotating around Y.
+     * -------------------------------------------------------
+     */
+
+    const targetX = state.pointer.y * 0.42;
+    const targetY = state.pointer.x * 0.42;
+    const targetZ = -state.pointer.x * 0.12;
+
+    pointer.current.x = THREE.MathUtils.damp(
+      pointer.current.x,
+      targetX,
+      4.5,
+      delta
+    );
+
+    pointer.current.y = THREE.MathUtils.damp(
+      pointer.current.y,
+      targetY,
+      4.5,
+      delta
+    );
+
+    if (globalGroupRef.current) {
+      /*
+       * Continuous rotation on BOTH X and Y axes.
+       *
+       * This is the important correction that prevents
+       * the object from looking like a flat horizontal disc.
+       */
+      globalGroupRef.current.rotation.x =
+        time * 0.105 * rotationSpeed +
+        pointer.current.x;
+
+      globalGroupRef.current.rotation.y =
+        time * 0.17 * rotationSpeed +
+        pointer.current.y;
+
+      globalGroupRef.current.rotation.z =
+        Math.sin(time * 0.11) * 0.055 +
+        targetZ;
+    }
+
+    /*
+     * -------------------------------------------------------
+     * OUTER SHELL
+     *
+     * Small independent movement layered on top of the
+     * global rotation.
+     * -------------------------------------------------------
+     */
 
     if (outerWireRef.current) {
-      outerWireRef.current.rotation.y = time * 0.18 * rotationSpeed + currentPointer.current.x;
-      outerWireRef.current.rotation.x = Math.sin(time * 0.08) * 0.15 - currentPointer.current.y;
+      outerWireRef.current.rotation.x =
+        Math.sin(time * 0.31) * 0.08;
+
+      outerWireRef.current.rotation.y =
+        Math.sin(time * 0.22) * 0.12;
     }
+
+    /*
+     * -------------------------------------------------------
+     * INNER CORE
+     * -------------------------------------------------------
+     */
 
     if (innerCoreRef.current) {
-      innerCoreRef.current.rotation.y = -time * 0.35 * rotationSpeed - currentPointer.current.x * 0.5;
-      const pulse = 1.0 + Math.sin(time * 2.5) * 0.06;
-      innerCoreRef.current.scale.set(pulse, pulse, pulse);
+      innerCoreRef.current.rotation.x =
+        -time * 0.18 * rotationSpeed;
+
+      innerCoreRef.current.rotation.y =
+        -time * 0.32 * rotationSpeed;
+
+      innerCoreRef.current.rotation.z =
+        time * 0.11 * rotationSpeed;
+
+      const pulse =
+        1 +
+        Math.sin(time * 2.5) * 0.055;
+
+      innerCoreRef.current.scale.setScalar(pulse);
     }
 
+    /*
+     * -------------------------------------------------------
+     * CENTRAL SINGULARITY
+     * -------------------------------------------------------
+     */
+
     if (glowRef.current) {
-      const glowPulse = 1.0 + Math.sin(time * 2.0) * 0.12;
-      glowRef.current.scale.set(glowPulse, glowPulse, glowPulse);
+      const glowPulse =
+        1 +
+        Math.sin(time * 2.0) * 0.105;
+
+      glowRef.current.scale.setScalar(glowPulse);
     }
   });
 
   return (
-    <group scale={[1.15, 1.15, 1.15]}>
-      {/* Outer Geodesic Wireframe Shell */}
+    <group
+      ref={globalGroupRef}
+      scale={[1.15, 1.15, 1.15]}
+    >
+      {/* Outer Geodesic Shell */}
+
       <mesh ref={outerWireRef}>
         <icosahedronGeometry args={[1.6, 2]} />
+
         <meshStandardMaterial
-          color="#00F0FF"
-          emissive="#00F0FF"
+          color={primaryColor}
+          emissive={primaryColor}
           emissiveIntensity={1.2}
           wireframe
           metalness={0.9}
@@ -63,12 +147,14 @@ export function CoreMesh({
         />
       </mesh>
 
-      {/* Inner Nested Polyhedron Shell */}
+      {/* Inner Polyhedral Shell */}
+
       <mesh ref={innerCoreRef}>
         <dodecahedronGeometry args={[0.95, 1]} />
+
         <meshStandardMaterial
-          color="#A040FF"
-          emissive="#A040FF"
+          color={secondaryColor}
+          emissive={secondaryColor}
           emissiveIntensity={1.5}
           wireframe
           metalness={0.95}
@@ -76,12 +162,14 @@ export function CoreMesh({
         />
       </mesh>
 
-      {/* Central Singularity Soft Glowing Core */}
+      {/* Central Singularity */}
+
       <mesh ref={glowRef}>
         <sphereGeometry args={[0.48, 32, 32]} />
+
         <meshStandardMaterial
-          color="#00F0FF"
-          emissive="#A040FF"
+          color={primaryColor}
+          emissive={secondaryColor}
           emissiveIntensity={2.0}
           transparent
           opacity={0.85}
