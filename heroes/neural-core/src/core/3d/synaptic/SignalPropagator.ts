@@ -62,18 +62,16 @@ export class SignalPropagator {
     }
 
     /*
-     * Build a short path through the graph.
+     * Build a multi-hop path avoiding node revisits.
      */
     const path: number[] = [
       startNode,
     ];
 
+    const visitedNodes = new Set<number>([startNode]);
+
     let currentNode =
       startNode;
-
-    let previousNode:
-      number | null =
-      null;
 
     const MAX_HOPS = 5;
 
@@ -95,29 +93,35 @@ export class SignalPropagator {
       }
 
       /*
-       * Avoid immediately travelling
-       * backwards through the same edge.
+       * Avoid nodes already present in the current path.
        */
       const availableNeighbors =
         neighbors.filter(
           (node) =>
-            node !== previousNode
+            !visitedNodes.has(node)
         );
 
       const candidates =
         availableNeighbors.length > 0
           ? availableNeighbors
+          : neighbors.filter(
+              (node) =>
+                node !== path[path.length - 2]
+            );
+
+      const finalCandidates =
+        candidates.length > 0
+          ? candidates
           : neighbors;
 
       /*
-       * Prefer a random branch so repeated
-       * clicks don't always produce the same path.
+       * Pick a candidate branch for diverse pathing.
        */
       const nextNode =
-        candidates[
+        finalCandidates[
           Math.floor(
             Math.random() *
-              candidates.length
+              finalCandidates.length
           )
         ];
 
@@ -125,8 +129,7 @@ export class SignalPropagator {
         nextNode
       );
 
-      previousNode =
-        currentNode;
+      visitedNodes.add(nextNode);
 
       currentNode =
         nextNode;
