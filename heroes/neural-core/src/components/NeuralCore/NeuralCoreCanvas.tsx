@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import { CoreMesh } from './CoreMesh';
 import { SynapticNodes } from './SynapticNodes';
 import { ConnectionLines } from './ConnectionLines';
+import { SynapticNetworkRef } from '../../core/3d/synaptic/SynapticNetwork';
 
 export interface SynapticNodeCloudProps {
   nodeCount?: number;
@@ -27,6 +28,13 @@ export function NeuralCoreCanvas({
   className = '',
 }: SynapticNodeCloudProps) {
   const [mounted, setMounted] = useState(false);
+
+  const networkRef = useRef<SynapticNetworkRef['current']>({
+    positions: null,
+    adjacency: null,
+    edges: [],
+    nodeCount: 0,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -72,13 +80,12 @@ export function NeuralCoreCanvas({
             attractionStrength={attractionStrength}
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
+            networkRef={networkRef}
           />
 
           {/* Dynamic Connection Lines */}
           <ConnectionLines
-            nodeCount={250}
-            maxConnections={250}
-            maxDistance={2.2}
+            networkRef={networkRef}
             color={secondaryColor}
           />
 

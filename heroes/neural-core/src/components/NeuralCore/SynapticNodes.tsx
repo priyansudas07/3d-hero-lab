@@ -5,6 +5,7 @@ import { ThreeEvent, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { SignalPropagator } from '../../core/3d/synaptic/SignalPropagator';
 import { SpatialGrid } from '../../core/3d/synaptic/SpatialGrid';
+import { SynapticNetworkRef } from '../../core/3d/synaptic/SynapticNetwork';
 
 interface SynapticNodesProps {
   count?: number;
@@ -13,6 +14,7 @@ interface SynapticNodesProps {
   primaryColor?: string;
   secondaryColor?: string;
   onNodeClick?: (nodeId: number) => void;
+  networkRef?: SynapticNetworkRef;
 }
 
 const MAX_GRAPH_NODES = 1000;
@@ -25,6 +27,7 @@ export function SynapticNodes({
   primaryColor = '#00F0FF',
   secondaryColor = '#A040FF',
   onNodeClick,
+  networkRef,
 }: SynapticNodesProps) {
   const nodeMeshRef = useRef<THREE.InstancedMesh>(null);
   const connectionRef = useRef<THREE.LineSegments>(null);
@@ -321,6 +324,15 @@ export function SynapticNodes({
       }
     }
 
+    if (networkRef) {
+      networkRef.current = {
+        positions: current,
+        adjacency: graph,
+        edges,
+        nodeCount: count,
+      };
+    }
+
     return {
       initialPositions: initial,
       currentPositions: current,
@@ -335,6 +347,7 @@ export function SynapticNodes({
     primaryColor,
     secondaryColor,
     spatialGrid,
+    networkRef,
   ]);
 
   /*

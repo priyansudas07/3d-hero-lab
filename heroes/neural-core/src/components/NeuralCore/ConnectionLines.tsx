@@ -3,11 +3,10 @@
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { SynapticNetworkRef } from '../../core/3d/synaptic/SynapticNetwork';
 
 interface ConnectionLinesProps {
-  nodeCount?: number;
-  maxConnections?: number;
-  maxDistance?: number;
+  networkRef?: SynapticNetworkRef;
   color?: string;
 }
 
@@ -33,11 +32,9 @@ const fragmentShader = `
   varying float vPointerDist;
 
   void main() {
-    // Wave pulse
     float pulse = sin((vProgress * 10.0) - (uTime * 2.0)) * 0.5 + 0.5;
     pulse = pow(pulse, 5.0);
 
-    // Cursor proximity flare within 3.0 units radius
     float cursorFlare = smoothstep(3.5, 0.5, vPointerDist);
 
     vec3 finalColor = mix(uColor * 0.2, uColor * (1.5 + cursorFlare * 1.5), pulse + cursorFlare * 0.4);
@@ -48,65 +45,25 @@ const fragmentShader = `
 `;
 
 export function ConnectionLines({
-  nodeCount = 200,
-  maxConnections = 250,
-  maxDistance = 2.2,
+  networkRef,
   color = '#A040FF',
 }: ConnectionLinesProps) {
   const lineRef = useRef<THREE.LineSegments>(null);
   const currentPointer = useRef(new THREE.Vector2(0, 0));
 
   const { lineGeometry, uniforms } = useMemo(() => {
-    const nodes: THREE.Vector3[] = [];
-    const numAxons = 6;
-    const axonAngles = Array.from({ length: numAxons }, (_, i) => (i / numAxons) * Math.PI * 2.0);
+    const edgePairs = networkRef?.current?.edges || [];
+    const positions = new Float32Array(Math.max(edgePairs.length * 6, 6));
+    const progress = new Float32Array(Math.max(edgePairs.length * 2, 2));
 
-    for (let i = 0; i < nodeCount; i++) {
-      const axonIdx = i % numAxons;
-      const baseAngle = axonAngles[axonIdx];
-      const distAlongAxon = 1.2 + (i / nodeCount) * 5.0;
-
-      const spiralAngle = distAlongAxon * 1.2;
-      const dispersionRadius = 0.2 + (distAlongAxon * 0.1);
-
-      nodes.push(
-        new THREE.Vector3(
-          Math.cos(baseAngle) * distAlongAxon + Math.cos(spiralAngle) * dispersionRadius,
-          Math.sin(baseAngle) * distAlongAxon + Math.sin(spiralAngle) * dispersionRadius,
-          (Math.random() - 0.5) * (distAlongAxon * 0.3)
-        )
-      );
-    }
-
-    const linePositions: number[] = [];
-    const lineProgress: number[] = [];
-    const connectionCounts = new Uint8Array(nodes.length);
-    let totalConnections = 0;
-
-    for (let i = 0; i < nodes.length; i++) {
-      if (connectionCounts[i] >= 2) continue;
-
-      for (let j = i + 1; j < nodes.length; j++) {
-        if (totalConnections >= maxConnections) break;
-        if (connectionCounts[j] >= 2) continue;
-
-        const dist = nodes[i].distanceTo(nodes[j]);
-        if (dist < maxDistance) {
-          linePositions.push(nodes[i].x, nodes[i].y, nodes[i].z);
-          linePositions.push(nodes[j].x, nodes[j].y, nodes[j].z);
-
-          lineProgress.push(0.0, 1.0);
-          connectionCounts[i]++;
-          connectionCounts[j]++;
-          totalConnections++;
-        }
-      }
-      if (totalConnections >= maxConnections) break;
+    for (let e = 0; e < edgePairs.length; e++) {
+      progress[e * 2] = 0.0;
+      progress[e * 2 + 1] = 1.0;
     }
 
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-    geometry.setAttribute('aProgress', new THREE.Float32BufferAttribute(lineProgress, 1));
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('aProgress', new THREE.Float32BufferAttribute(progress, 1));
 
     const shaderUniforms = {
       uTime: { value: 0 },
@@ -115,21 +72,37 @@ export function ConnectionLines({
     };
 
     return { lineGeometry: geometry, uniforms: shaderUniforms };
-  }, [nodeCount, maxConnections, maxDistance, color]);
+  }, [networkRef, color]);
 
   useFrame((state, delta) => {
-    if (lineRef.current) {
-      const mat = lineRef.current.material as THREE.ShaderMaterial;
-      mat.uniforms.uTime.value = state.clock.elapsedTime;
+    if (!lineRef.current) return;
+    const mat = lineRef.current.material as THREE.ShaderMaterial;
+    mat.uniforms.uTime.value = state.clock.elapsedTime;
 
-      // Dampened cursor position for smooth GLSL flare
-      currentPointer.current.x = THREE.MathUtils.damp(currentPointer.current.x, state.pointer.x, 5, delta);
-      currentPointer.current.y = THREE.MathUtils.damp(currentPointer.current.y, state.pointer.y, 5, delta);
-      mat.uniforms.uPointer.value.copy(currentPointer.current);
+    currentPointer.current.x = THREE.MathUtils.damp(currentPointer.current.x, state.pointer.x, 5, delta);
+    currentPointer.current.y = THREE.MathUtils.damp(currentPointer.current.y, state.pointer.y, 5, delta);
+    mat.uniforms.uPointer.value.copy(currentPointer.current);
 
-      lineRef.current.rotation.y = state.clock.elapsedTime * 0.025;
-      lineRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.01) * 0.04;
+    const positionsAttr = lineRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const stateNet = networkRef?.current;
+
+    if (stateNet && stateNet.positions && stateNet.edges.length > 0) {
+      const pos = stateNet.positions;
+      const edges = stateNet.edges;
+
+      for (let e = 0; e < edges.length; e++) {
+        const [a, b] = edges[e];
+        const aIndex = a * 3;
+        const bIndex = b * 3;
+
+        positionsAttr.setXYZ(e * 2, pos[aIndex], pos[aIndex + 1], pos[aIndex + 2]);
+        positionsAttr.setXYZ(e * 2 + 1, pos[bIndex], pos[bIndex + 1], pos[bIndex + 2]);
+      }
+      positionsAttr.needsUpdate = true;
     }
+
+    lineRef.current.rotation.y = state.clock.elapsedTime * 0.025;
+    lineRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.01) * 0.04;
   });
 
   return (
