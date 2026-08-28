@@ -8,6 +8,7 @@ import React, {
 
 import {
   Canvas,
+  useFrame,
 } from '@react-three/fiber';
 
 import {
@@ -19,6 +20,8 @@ import {
   Bloom,
   Vignette,
 } from '@react-three/postprocessing';
+
+import * as THREE from 'three';
 
 import {
   CoreMesh,
@@ -61,6 +64,91 @@ export interface SynapticNodeCloudProps {
   className?:
     string;
 
+}
+
+
+/* =========================================================
+   NEURAL SYSTEM (SHARED ANIMATED GROUP)
+   ========================================================= */
+
+interface NeuralSystemProps {
+  nodeCount: number;
+  interactionRadius: number;
+  attractionStrength: number;
+  primaryColor: string;
+  secondaryColor: string;
+  networkRef: React.MutableRefObject<SynapticNetworkState>;
+}
+
+function NeuralSystem({
+  nodeCount,
+  interactionRadius,
+  attractionStrength,
+  primaryColor,
+  secondaryColor,
+  networkRef,
+}: NeuralSystemProps) {
+  const groupRef = useRef<THREE.Group>(null);
+  const pointer = useRef(new THREE.Vector2(0, 0));
+
+  useFrame((state, delta) => {
+    const time = state.clock.elapsedTime;
+
+    const targetX = state.pointer.y * 0.42;
+    const targetY = state.pointer.x * 0.42;
+    const targetZ = -state.pointer.x * 0.12;
+
+    pointer.current.x = THREE.MathUtils.damp(
+      pointer.current.x,
+      targetX,
+      4.5,
+      delta
+    );
+
+    pointer.current.y = THREE.MathUtils.damp(
+      pointer.current.y,
+      targetY,
+      4.5,
+      delta
+    );
+
+    if (groupRef.current) {
+      groupRef.current.rotation.x =
+        time * 0.105 + pointer.current.x;
+
+      groupRef.current.rotation.y =
+        time * 0.17 + pointer.current.y;
+
+      groupRef.current.rotation.z =
+        Math.sin(time * 0.11) * 0.055 + targetZ;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {/* CENTRAL CORE */}
+      <CoreMesh
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+      />
+
+      {/* SYNAPTIC NODES */}
+      <SynapticNodes
+        count={nodeCount}
+        interactionRadius={interactionRadius}
+        attractionStrength={attractionStrength}
+        primaryColor={primaryColor}
+        secondaryColor={secondaryColor}
+        networkRef={networkRef}
+      />
+
+      {/* CONNECTIONS */}
+      <ConnectionLines
+        networkRef={networkRef}
+        color={secondaryColor}
+      />
+    </group>
+  );
 }
 
 
@@ -302,73 +390,16 @@ export function NeuralCoreCanvas({
 
 
           {/* =============================================
-              CENTRAL CORE
+              NEURAL SYSTEM (SHARED ROTATION GROUP)
               ============================================= */}
 
-          <CoreMesh
-
-            primaryColor={
-              primaryColor
-            }
-
-            secondaryColor={
-              secondaryColor
-            }
-
-          />
-
-
-          {/* =============================================
-              SYNAPTIC NODES
-
-              This generates the ONLY network.
-              ============================================= */}
-
-          <SynapticNodes
-
-            count={
-              nodeCount
-            }
-
-            interactionRadius={
-              interactionRadius
-            }
-
-            attractionStrength={
-              attractionStrength
-            }
-
-            primaryColor={
-              primaryColor
-            }
-
-            secondaryColor={
-              secondaryColor
-            }
-
-            networkRef={
-              networkRef
-            }
-
-          />
-
-
-          {/* =============================================
-              CONNECTIONS
-
-              Reads the exact same network.
-              ============================================= */}
-
-          <ConnectionLines
-
-            networkRef={
-              networkRef
-            }
-
-            color={
-              secondaryColor
-            }
-
+          <NeuralSystem
+            nodeCount={nodeCount}
+            interactionRadius={interactionRadius}
+            attractionStrength={attractionStrength}
+            primaryColor={primaryColor}
+            secondaryColor={secondaryColor}
+            networkRef={networkRef}
           />
 
 
