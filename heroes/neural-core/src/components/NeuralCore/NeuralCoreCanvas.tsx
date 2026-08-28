@@ -89,7 +89,14 @@ export function NeuralCoreCanvas({
             color={secondaryColor}
           />
 
-          <OrbitControls enableZoom={false} enablePan={false} maxPolarAngle={Math.PI / 1.5} minPolarAngle={Math.PI / 3} />
+          <OrbitControls
+            enableZoom={false}
+            enablePan={false}
+            minPolarAngle={0.05}
+            maxPolarAngle={Math.PI - 0.05}
+            enableDamping
+            dampingFactor={0.08}
+          />
         </Canvas>
       </div>
 
