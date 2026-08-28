@@ -347,7 +347,37 @@ export function SynapticNodes({
     primaryColor,
     secondaryColor,
     spatialGrid,
+  ]);
+
+  useEffect(() => {
+    if (!networkRef) return;
+
+    networkRef.current.positions =
+      currentPositions;
+
+    networkRef.current.adjacency =
+      adjacencyList;
+
+    networkRef.current.edges =
+      edgePairs;
+
+    networkRef.current.nodeCount =
+      count;
+
+    return () => {
+      if (networkRef.current.positions === currentPositions) {
+        networkRef.current.positions = null;
+        networkRef.current.adjacency = null;
+        networkRef.current.edges = [];
+        networkRef.current.nodeCount = 0;
+      }
+    };
+  }, [
     networkRef,
+    currentPositions,
+    adjacencyList,
+    edgePairs,
+    count,
   ]);
 
   /*
