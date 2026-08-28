@@ -87,52 +87,92 @@ function NeuralSystem({
   primaryColor,
   secondaryColor,
   networkRef,
-}: NeuralSystemProps) {
+}: {
+  nodeCount: number;
+  interactionRadius: number;
+  attractionStrength: number;
+  primaryColor: string;
+  secondaryColor: string;
+  networkRef: React.MutableRefObject<SynapticNetworkState>;
+}) {
   const groupRef = useRef<THREE.Group>(null);
-  const pointer = useRef(new THREE.Vector2(0, 0));
+
+  const rotation = useRef(
+    new THREE.Vector3(0, 0, 0)
+  );
 
   useFrame((state, delta) => {
+    if (!groupRef.current) return;
+
     const time = state.clock.elapsedTime;
 
-    const targetX = state.pointer.y * 0.42;
-    const targetY = state.pointer.x * 0.42;
-    const targetZ = -state.pointer.x * 0.12;
+    /*
+     * Mouse controls the COMPLETE neural structure.
+     *
+     * X = vertical tilt
+     * Y = horizontal tilt
+     * Z = subtle banking
+     */
 
-    pointer.current.x = THREE.MathUtils.damp(
-      pointer.current.x,
-      targetX,
-      4.5,
-      delta
-    );
+    const targetX =
+      state.pointer.y * 0.32;
 
-    pointer.current.y = THREE.MathUtils.damp(
-      pointer.current.y,
-      targetY,
-      4.5,
-      delta
-    );
+    const targetY =
+      state.pointer.x * 0.32;
 
-    if (groupRef.current) {
-      groupRef.current.rotation.x =
-        time * 0.105 + pointer.current.x;
+    const targetZ =
+      state.pointer.x * -0.08;
 
-      groupRef.current.rotation.y =
-        time * 0.17 + pointer.current.y;
+    rotation.current.x =
+      THREE.MathUtils.damp(
+        rotation.current.x,
+        targetX,
+        4,
+        delta
+      );
 
-      groupRef.current.rotation.z =
-        Math.sin(time * 0.11) * 0.055 + targetZ;
-    }
+    rotation.current.y =
+      THREE.MathUtils.damp(
+        rotation.current.y,
+        targetY,
+        4,
+        delta
+      );
+
+    rotation.current.z =
+      THREE.MathUtils.damp(
+        rotation.current.z,
+        targetZ,
+        4,
+        delta
+      );
+
+    /*
+     * Autonomous 3D rotation.
+     *
+     * Both X and Y rotate continuously.
+     */
+
+    groupRef.current.rotation.x =
+      time * 0.055 +
+      rotation.current.x;
+
+    groupRef.current.rotation.y =
+      time * 0.12 +
+      rotation.current.y;
+
+    groupRef.current.rotation.z =
+      Math.sin(time * 0.15) * 0.035 +
+      rotation.current.z;
   });
 
   return (
-    <group ref={groupRef}>
-      {/* CENTRAL CORE */}
+    <group ref={groupRef} scale={1.15}>
       <CoreMesh
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
       />
 
-      {/* SYNAPTIC NODES */}
       <SynapticNodes
         count={nodeCount}
         interactionRadius={interactionRadius}
@@ -142,7 +182,6 @@ function NeuralSystem({
         networkRef={networkRef}
       />
 
-      {/* CONNECTIONS */}
       <ConnectionLines
         networkRef={networkRef}
         color={secondaryColor}
