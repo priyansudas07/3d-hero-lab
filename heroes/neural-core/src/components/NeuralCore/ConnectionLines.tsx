@@ -503,8 +503,11 @@ export function ConnectionLines({
         propagator
       ) {
 
-        const activeSignals =
-          propagator.getActiveSignals();
+        const signalEdges =
+          propagator.getSignalEdges();
+
+        const nodeCount =
+          network.nodeCount;
 
 
         for (
@@ -512,28 +515,33 @@ export function ConnectionLines({
 
           i <
           Math.min(
-            activeSignals.length,
+            signalEdges.length,
             MAX_SIGNAL_PULSES
           );
 
           i++
         ) {
 
-          const signal =
-            activeSignals[i];
+          const signalEdge =
+            signalEdges[i];
 
+          const from =
+            signalEdge.from;
+
+          const to =
+            signalEdge.to;
+
+          /*
+           * Validate node indices safely.
+           */
           if (
-            signal.nextNode ===
-            null
+            from < 0 ||
+            from >= nodeCount ||
+            to < 0 ||
+            to >= nodeCount
           ) {
             continue;
           }
-
-          const from =
-            signal.activeNode;
-
-          const to =
-            signal.nextNode;
 
           const fromIndex =
             from * 3;
@@ -543,43 +551,41 @@ export function ConnectionLines({
 
 
           /*
-           * Interpolate the pulse between
-           * the two nodes.
+           * Interpolate pulse head (bright lead).
            */
           const px =
             THREE.MathUtils.lerp(
               positions[fromIndex],
               positions[toIndex],
-              signal.progress
+              signalEdge.progress
             );
 
           const py =
             THREE.MathUtils.lerp(
               positions[fromIndex + 1],
               positions[toIndex + 1],
-              signal.progress
+              signalEdge.progress
             );
 
           const pz =
             THREE.MathUtils.lerp(
               positions[fromIndex + 2],
               positions[toIndex + 2],
-              signal.progress
+              signalEdge.progress
             );
 
 
           /*
-           * Tiny line segment gives the
-           * pulse a directional appearance.
+           * Short 6% directional trailing segment behind pulse head.
            */
           const trail =
-            0.055;
+            0.06;
 
 
           const trailProgress =
             Math.max(
               0,
-              signal.progress -
+              signalEdge.progress -
                 trail
             );
 
@@ -632,13 +638,14 @@ export function ConnectionLines({
 
           pulseSignalAttribute.setX(
             vertexA,
-            signal.intensity *
-            0.45
+            signalEdge.intensity *
+            0.35
           );
 
           pulseSignalAttribute.setX(
             vertexB,
-            signal.intensity
+            signalEdge.intensity *
+            1.8
           );
 
 
