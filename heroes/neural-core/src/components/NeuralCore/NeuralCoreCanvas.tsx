@@ -458,41 +458,8 @@ export function NeuralCoreCanvas({
 
 
           {/* =============================================
-              CAMERA CONTROL
+              CAMERA CONTROL (Handled via NeuralSystem pointer dampening)
               ============================================= */}
-
-          <OrbitControls
-
-            enableZoom={
-              false
-            }
-
-            enablePan={
-              false
-            }
-
-            minPolarAngle={
-              0.05
-            }
-
-            maxPolarAngle={
-              Math.PI - 0.05
-            }
-
-            enableDamping={
-              true
-            }
-
-            dampingFactor={
-              0.08
-            }
-
-            rotateSpeed={
-              0.65
-            }
-
-          />
-
         </Canvas>
 
       </div>
