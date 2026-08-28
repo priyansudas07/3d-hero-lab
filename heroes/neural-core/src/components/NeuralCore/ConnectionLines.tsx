@@ -457,13 +457,12 @@ export function ConnectionLines({
           signals.get(b) ??
           0;
 
-        if (nearbyFlags) {
-          if (nearbyFlags[a] !== 0) {
-            signalA = Math.max(signalA, 0.28);
-          }
-          if (nearbyFlags[b] !== 0) {
-            signalB = Math.max(signalB, 0.35);
-          }
+        /*
+         * Require both endpoints (A & B) near cursor for subtle edge highlight
+         */
+        if (nearbyFlags && nearbyFlags[a] !== 0 && nearbyFlags[b] !== 0) {
+          signalA = Math.max(signalA, 0.16);
+          signalB = Math.max(signalB, 0.16);
         }
 
         signalAttribute.setX(
