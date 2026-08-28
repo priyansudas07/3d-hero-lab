@@ -15,6 +15,12 @@ import {
 } from '@react-three/drei';
 
 import {
+  EffectComposer,
+  Bloom,
+  Vignette,
+} from '@react-three/postprocessing';
+
+import {
   CoreMesh,
 } from './CoreMesh';
 
@@ -201,6 +207,9 @@ export function NeuralCoreCanvas({
       `}
     >
 
+      {/* Atmospheric Background Backdrop Lighting */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,_rgba(0,240,255,0.08)_0%,_rgba(160,64,255,0.04)_45%,_rgba(3,3,8,1)_85%)] pointer-events-none" />
+
       {/* =================================================
           WEBGL
           ================================================= */}
@@ -361,6 +370,21 @@ export function NeuralCoreCanvas({
             }
 
           />
+
+
+          {/* =============================================
+              POST PROCESSING (Bloom & Ethereal Glow)
+              ============================================= */}
+
+          <EffectComposer>
+            <Bloom
+              intensity={0.75}
+              luminanceThreshold={0.2}
+              luminanceSmoothing={0.9}
+              mipmapBlur
+            />
+            <Vignette eskil={false} offset={0.1} darkness={0.8} />
+          </EffectComposer>
 
 
           {/* =============================================

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -9,6 +9,42 @@ interface CoreMeshProps {
   secondaryColor?: string;
   rotationSpeed?: number;
 }
+
+const fresnelVertexShader = `
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    vViewPosition = -mvPosition.xyz;
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+const fresnelFragmentShader = `
+  uniform vec3 uColor;
+  uniform vec3 uEmissiveColor;
+  uniform float uTime;
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+
+  void main() {
+    vec3 normal = normalize(vNormal);
+    vec3 viewDir = normalize(vViewPosition);
+    
+    // Fresnel Rim Intensity
+    float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 2.5);
+    
+    // Energy pulse
+    float pulse = sin(uTime * 3.0) * 0.25 + 0.75;
+    
+    vec3 glowColor = mix(uColor, uEmissiveColor, fresnel * pulse);
+    float alpha = clamp(0.35 + fresnel * 0.65, 0.0, 1.0);
+
+    gl_FragColor = vec4(glowColor * (1.2 + fresnel * 1.5), alpha);
+  }
+`;
 
 export function CoreMesh({
   primaryColor = '#00F0FF',
@@ -22,17 +58,18 @@ export function CoreMesh({
 
   const pointer = useRef(new THREE.Vector2(0, 0));
 
+  const fresnelUniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uColor: { value: new THREE.Color(primaryColor) },
+      uEmissiveColor: { value: new THREE.Color(secondaryColor) },
+    }),
+    [primaryColor, secondaryColor]
+  );
+
   useFrame((state, delta) => {
     const time = state.clock.elapsedTime;
-
-    /*
-     * -------------------------------------------------------
-     * GLOBAL 3D MOVEMENT
-     *
-     * This is deliberately applied to the complete core
-     * instead of only rotating around Y.
-     * -------------------------------------------------------
-     */
+    fresnelUniforms.uTime.value = time;
 
     const targetX = state.pointer.y * 0.42;
     const targetY = state.pointer.x * 0.42;
@@ -53,12 +90,6 @@ export function CoreMesh({
     );
 
     if (globalGroupRef.current) {
-      /*
-       * Continuous rotation on BOTH X and Y axes.
-       *
-       * This is the important correction that prevents
-       * the object from looking like a flat horizontal disc.
-       */
       globalGroupRef.current.rotation.x =
         time * 0.105 * rotationSpeed +
         pointer.current.x;
@@ -72,15 +103,6 @@ export function CoreMesh({
         targetZ;
     }
 
-    /*
-     * -------------------------------------------------------
-     * OUTER SHELL
-     *
-     * Small independent movement layered on top of the
-     * global rotation.
-     * -------------------------------------------------------
-     */
-
     if (outerWireRef.current) {
       outerWireRef.current.rotation.x =
         Math.sin(time * 0.31) * 0.08;
@@ -88,12 +110,6 @@ export function CoreMesh({
       outerWireRef.current.rotation.y =
         Math.sin(time * 0.22) * 0.12;
     }
-
-    /*
-     * -------------------------------------------------------
-     * INNER CORE
-     * -------------------------------------------------------
-     */
 
     if (innerCoreRef.current) {
       innerCoreRef.current.rotation.x =
@@ -111,12 +127,6 @@ export function CoreMesh({
 
       innerCoreRef.current.scale.setScalar(pulse);
     }
-
-    /*
-     * -------------------------------------------------------
-     * CENTRAL SINGULARITY
-     * -------------------------------------------------------
-     */
 
     if (glowRef.current) {
       const glowPulse =
@@ -140,7 +150,7 @@ export function CoreMesh({
         <meshStandardMaterial
           color={primaryColor}
           emissive={primaryColor}
-          emissiveIntensity={1.2}
+          emissiveIntensity={1.8}
           wireframe
           metalness={0.9}
           roughness={0.1}
@@ -155,25 +165,25 @@ export function CoreMesh({
         <meshStandardMaterial
           color={secondaryColor}
           emissive={secondaryColor}
-          emissiveIntensity={1.5}
+          emissiveIntensity={2.2}
           wireframe
           metalness={0.95}
           roughness={0.05}
         />
       </mesh>
 
-      {/* Central Singularity */}
+      {/* Central Singularity with Custom Fresnel Rim Light Shader */}
 
       <mesh ref={glowRef}>
-        <sphereGeometry args={[0.48, 32, 32]} />
+        <sphereGeometry args={[0.52, 32, 32]} />
 
-        <meshStandardMaterial
-          color={primaryColor}
-          emissive={secondaryColor}
-          emissiveIntensity={2.0}
+        <shaderMaterial
+          vertexShader={fresnelVertexShader}
+          fragmentShader={fresnelFragmentShader}
+          uniforms={fresnelUniforms}
           transparent
-          opacity={0.85}
-          roughness={0.2}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
         />
       </mesh>
     </group>
