@@ -5,15 +5,16 @@ import Lenis from 'lenis';
 
 export function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Initialize Lenis smooth scrolling
+    // Initialize Lenis smooth scrolling with ultra-responsive physics
     const lenis = new Lenis({
-      duration: 1.15,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // smooth exponential ease-out
+      duration: 0.85, // Snappier response (no delayed lag feeling)
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
-      wheelMultiplier: 0.9,
-      touchMultiplier: 1.5,
+      wheelMultiplier: 1.15, // Immediate 1:1 direct response to mouse wheel
+      touchMultiplier: 1.2,
+      infinite: false,
     });
 
     let animationFrameId: number;
@@ -32,7 +33,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
         const elem = document.querySelector(target.hash);
         if (elem) {
           e.preventDefault();
-          lenis.scrollTo(target.hash, { offset: 0, duration: 1.2 });
+          lenis.scrollTo(target.hash, { offset: 0, duration: 0.9 });
         }
       }
     };
