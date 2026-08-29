@@ -84,7 +84,7 @@ export function CoreMesh({
 
 
     /* =====================================================
-       1. REAL NETWORK ACTIVITY CALCULATION
+       1. REAL NETWORK ACTIVITY CALCULATION & COUPLING
        ===================================================== */
 
     let targetActivity = 0.0;
@@ -101,23 +101,28 @@ export function CoreMesh({
         }
 
         // Normalize aggregate activity smoothly
-        targetActivity = Math.min(1.0, totalIntensity / 3.5);
+        targetActivity = Math.min(1.0, totalIntensity / 2.8);
       }
     }
 
     /*
-     * Extremely subtle hover anticipation (0.04 boost)
+     * Extremely subtle hover anticipation (0.03 boost)
      * Hovering never overpowers real propagated signals
      */
     if (networkRef?.current?.hoveredNode !== null && networkRef?.current?.hoveredNode !== undefined) {
-      targetActivity = Math.max(targetActivity, 0.04);
+      targetActivity = Math.max(targetActivity, 0.03);
     }
 
-    // Smooth damping prevents strobing and harsh spikes
+    /*
+     * Asymmetric damping: fast attack on signal arrival (6.0), smooth decaying release (2.8)
+     */
+    const dampRate =
+      targetActivity > smoothedActivity.current ? 6.0 : 2.8;
+
     smoothedActivity.current = THREE.MathUtils.damp(
       smoothedActivity.current,
       targetActivity,
-      3.8,
+      dampRate,
       delta
     );
 
@@ -137,7 +142,7 @@ export function CoreMesh({
 
 
     /* =====================================================
-       3. OUTER GEODESIC SHELL
+       3. OUTER GEODESIC SHELL (Stage 1: Subtle boundary containment)
        ===================================================== */
 
     if (outerMaterialRef.current) {
@@ -147,21 +152,22 @@ export function CoreMesh({
 
 
     /* =====================================================
-       4. INNER POLYHEDRON
+       4. INNER POLYHEDRON (Stage 2: Computational acceleration)
        ===================================================== */
 
     if (
       innerCoreRef.current
     ) {
 
+      // Subtle rotational-energy modulation driven by network activity
       innerCoreRef.current.rotation.x =
         time *
-        (0.20 + activity * 0.08) *
+        (0.20 + activity * 0.07) *
         rotationSpeed;
 
       innerCoreRef.current.rotation.y =
         -time *
-        (0.31 + activity * 0.10) *
+        (0.31 + activity * 0.09) *
         rotationSpeed;
 
       innerCoreRef.current.rotation.z =
@@ -174,9 +180,9 @@ export function CoreMesh({
         1.0 +
         Math.sin(
           time *
-          (2.5 + activity * 1.0)
+          (2.5 + activity * 0.9)
         ) *
-        (0.055 + activity * 0.025);
+        (0.055 + activity * 0.022);
 
 
       innerCoreRef.current
@@ -193,7 +199,7 @@ export function CoreMesh({
 
 
     /* =====================================================
-       5. CENTRAL SINGULARITY (Primary Processing Heart)
+       5. CENTRAL SINGULARITY (Stage 3: Energy processing & release)
        ===================================================== */
 
     if (
@@ -204,7 +210,7 @@ export function CoreMesh({
         (1.0 + activity * 0.08) +
         Math.sin(
           time *
-          (2.0 + activity * 0.8)
+          (2.0 + activity * 0.7)
         ) *
         (0.10 + activity * 0.04);
 
