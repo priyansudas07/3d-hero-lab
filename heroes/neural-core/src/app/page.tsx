@@ -3,6 +3,7 @@
 import React, {
   useRef,
   useCallback,
+  useState,
 } from 'react';
 import Link from 'next/link';
 
@@ -24,6 +25,16 @@ export default function Home() {
       nodeCount: 0,
       signalPropagator: null,
     });
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = useCallback(() => {
+    navigator.clipboard.writeText('hello@synapse.studio');
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  }, []);
 
   /*
    * Button -> NeuralCore Micro-Interaction:
@@ -102,6 +113,12 @@ export default function Home() {
               className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
             >
               ABOUT
+            </a>
+            <a
+              href="#contact"
+              className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
+            >
+              CONTACT
             </a>
             <a
               href="https://github.com"
@@ -478,7 +495,7 @@ export default function Home() {
           ========================================================= */}
       <section
         id="about"
-        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-24 pb-36 border-t border-white/[0.06]"
+        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-24 pb-32 border-t border-white/[0.06]"
       >
         {/* Section Identifier & Technical Index */}
         <div className="flex items-center justify-between mb-12 pb-4 border-b border-white/[0.04]">
@@ -548,21 +565,114 @@ export default function Home() {
                 GPU Instancing, Compute Shaders, and High-Throughput Event Streaming.
               </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            {/* Action / Contact Route */}
-            <div className="pt-6 border-t border-white/[0.04] flex items-center justify-between">
-              <span className="text-[11px] text-[#64748B]">OPEN FOR COLLABORATION</span>
+      {/* =========================================================
+          SECTION 03: CONTACT / ENDPOINT
+          ========================================================= */}
+      <section
+        id="contact"
+        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-24 pb-36 border-t border-white/[0.06]"
+      >
+        {/* Section Identifier */}
+        <div className="flex items-center justify-between mb-12 pb-4 border-b border-white/[0.04]">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs text-[#00F0FF] tracking-widest uppercase">
+              03 // CONTACT
+            </span>
+            <span className="text-white/20">/</span>
+            <span className="font-mono text-xs text-[#94A3B8] tracking-wider uppercase">
+              COMMUNICATIONS
+            </span>
+          </div>
+
+          <div className="font-mono text-[11px] text-[#64748B] tracking-widest uppercase hidden sm:block">
+            DIRECT CHANNEL
+          </div>
+        </div>
+
+        {/* Contact Composition */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16 items-start mb-20">
+          <div className="md:col-span-7 flex flex-col gap-6">
+            <h2 className="text-3xl sm:text-5xl font-medium tracking-tight text-white leading-[1.08]">
+              Open for collaboration, research, and technical discussions.
+            </h2>
+            <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed max-w-md">
+              Feel free to reach out directly via email for engineering inquiries, project discussions, or research ideas.
+            </p>
+          </div>
+
+          {/* Direct Communication Action */}
+          <div className="md:col-span-5 flex flex-col gap-6 font-mono text-xs">
+            {/* Primary Contact: Email & Copy Action */}
+            <div className="p-6 border border-white/[0.08] bg-white/[0.01]">
+              <div className="text-[10px] text-[#64748B] uppercase tracking-widest mb-2">
+                PRIMARY CONTACT
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <a
+                  href="mailto:hello@synapse.studio"
+                  className="text-sm sm:text-base text-white hover:text-[#00F0FF] transition-colors duration-200"
+                >
+                  hello@synapse.studio
+                </a>
+
+                <button
+                  onClick={handleCopyEmail}
+                  className="
+                    self-start
+                    sm:self-auto
+                    px-3
+                    py-1.5
+                    border
+                    border-white/15
+                    hover:border-[#00F0FF]/50
+                    hover:text-[#00F0FF]
+                    active:scale-[0.97]
+                    text-[11px]
+                    uppercase
+                    tracking-wider
+                    transition-all
+                    duration-200
+                    cursor-pointer
+                  "
+                >
+                  {copied ? 'COPIED ✓' : 'COPY EMAIL'}
+                </button>
+              </div>
+            </div>
+
+            {/* Verified External Channels */}
+            <div className="flex items-center gap-6 pt-2">
               <a
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#00F0FF] hover:underline flex items-center gap-1"
+                className="text-[#94A3B8] hover:text-white transition-colors duration-200 flex items-center gap-1.5"
               >
-                <span>GET IN TOUCH</span>
-                <span>↗</span>
+                <span>GITHUB</span>
+                <span className="text-[#00F0FF]">↗</span>
+              </a>
+
+              <a
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#94A3B8] hover:text-white transition-colors duration-200 flex items-center gap-1.5"
+              >
+                <span>LINKEDIN</span>
+                <span className="text-[#00F0FF]">↗</span>
               </a>
             </div>
           </div>
+        </div>
+
+        {/* Minimal Footer */}
+        <div className="pt-8 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-[#64748B]">
+          <div>SYNAPSE LAB // EXPERIMENTAL SYSTEMS</div>
+          <div>© {new Date().getFullYear()} · ALL SPECIMENS DOCUMENTED</div>
         </div>
       </section>
     </div>
