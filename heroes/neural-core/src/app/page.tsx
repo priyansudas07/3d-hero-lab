@@ -68,15 +68,15 @@ export default function Home() {
       </div>
 
       {/* =========================================================
-          LAYER 2: EDITORIAL HEADER (PERSONAL IDENTITY)
+          LAYER 2: EDITORIAL HEADER (STUDIO / LAB IDENTITY)
           ========================================================= */}
       <header className="relative z-10 w-full flex items-start justify-between pointer-events-none">
         <div className="flex flex-col gap-0.5 pointer-events-auto">
           <div className="font-mono text-sm font-semibold tracking-wider text-white">
-            PRIYANSU DAS
+            SYNAPSE LAB
           </div>
           <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#94A3B8]">
-            CSE / SOFTWARE & 3D SYSTEMS
+            EXPERIMENTAL SOFTWARE & 3D SYSTEMS
           </div>
         </div>
 
@@ -94,7 +94,7 @@ export default function Home() {
             EXPERIMENTS
           </a>
           <a
-            href="https://github.com/priyansudas07"
+            href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-white transition-colors duration-200"
@@ -104,8 +104,8 @@ export default function Home() {
         </nav>
 
         <div className="font-mono text-[11px] text-[#64748B] text-right pointer-events-auto">
-          <div>LOC // INDIA</div>
-          <div className="text-[#00F0FF]/90">AVAILABLE</div>
+          <div>STATUS // ACTIVE</div>
+          <div className="text-[#00F0FF]/90">ONLINE</div>
         </div>
       </header>
 
@@ -167,7 +167,7 @@ export default function Home() {
 
             {/* Secondary Action: GitHub Link */}
             <a
-              href="https://github.com/priyansudas07"
+              href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
               className="
@@ -214,7 +214,7 @@ export default function Home() {
         </div>
 
         <div className="pointer-events-auto">
-          PRIYANSU.DEV // 2026
+          SYNAPSE.STUDIO // 2026
         </div>
       </footer>
     </main>
