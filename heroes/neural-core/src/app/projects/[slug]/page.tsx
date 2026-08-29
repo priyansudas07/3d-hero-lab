@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { PROJECT_SPECIMENS } from '@/data/projects';
 
@@ -7,6 +8,37 @@ interface ProjectPageProps {
   params: Promise<{
     slug: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ProjectPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const project = PROJECT_SPECIMENS.find((p) => p.slug === slug);
+
+  if (!project) {
+    return {
+      title: 'Specimen Not Found',
+    };
+  }
+
+  return {
+    title: `${project.title} (${project.number})`,
+    description: project.summary,
+    alternates: {
+      canonical: `/projects/${project.slug}`,
+    },
+    openGraph: {
+      title: `${project.title} // ${project.category}`,
+      description: project.summary,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${project.title} (${project.number}) — SYNAPSE LAB`,
+      description: project.summary,
+    },
+  };
 }
 
 export async function generateStaticParams() {
