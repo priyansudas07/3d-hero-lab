@@ -652,6 +652,9 @@ export function SynapticNodes({
       .needsUpdate =
       true;
 
+    // Explicit bounding sphere for raycasting reliability
+    mesh.computeBoundingSphere();
+
   }, [
     count,
     initialPositions,
@@ -659,6 +662,22 @@ export function SynapticNodes({
     baseColors,
     reusableDummy,
   ]);
+
+
+  /* =========================================================
+     TRIGGER SIGNAL HELPER
+     ========================================================= */
+
+  const triggerNodeSignal = (nodeId: number) => {
+    if (adjacencyList && adjacencyList.has(nodeId)) {
+      signalPropagator.triggerSignal(
+        nodeId,
+        adjacencyList,
+        2.4
+      );
+    }
+    onNodeClick?.(nodeId);
+  };
 
 
   /* =========================================================
@@ -693,35 +712,34 @@ export function SynapticNodes({
 
   const handlePointerDown =
     (
-      event: ThreeEvent<MouseEvent>
+      event: ThreeEvent<PointerEvent | MouseEvent>
     ) => {
 
       event.stopPropagation();
 
-      if (
-        event.instanceId ===
-        undefined
-      ) {
-        return;
+      let targetNodeId = event.instanceId;
+
+      /*
+       * Fallback: if instanceId is undefined, find closest node to click point
+       */
+      if (targetNodeId === undefined && event.point) {
+        let minDist = Infinity;
+        for (let i = 0; i < count; i++) {
+          const idx = i * 3;
+          const dx = currentPositions[idx] - event.point.x;
+          const dy = currentPositions[idx + 1] - event.point.y;
+          const dz = currentPositions[idx + 2] - event.point.z;
+          const distSq = dx * dx + dy * dy + dz * dz;
+          if (distSq < minDist) {
+            minDist = distSq;
+            targetNodeId = i;
+          }
+        }
       }
 
-      const nodeId =
-        event.instanceId;
-
-      if (
-        adjacencyList
-      ) {
-
-        signalPropagator.triggerSignal(
-          nodeId,
-          adjacencyList,
-          2.4
-        );
+      if (targetNodeId !== undefined) {
+        triggerNodeSignal(targetNodeId);
       }
-
-      onNodeClick?.(
-        nodeId
-      );
     };
 
 
@@ -1353,6 +1371,9 @@ export function SynapticNodes({
         handlePointerOut
       }
       onPointerDown={
+        handlePointerDown
+      }
+      onClick={
         handlePointerDown
       }
     >
