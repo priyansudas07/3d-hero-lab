@@ -236,19 +236,20 @@ export function SynapticNodes({
         Math.random();
 
       /* -----------------------------------------------------
-         Central neural cloud
+         Central core neural cloud (82% density concentrated near core)
          ----------------------------------------------------- */
 
       if (
-        type < 0.68
+        type < 0.82
       ) {
 
         const radius =
-          0.45 +
-          Math.cbrt(
-            Math.random()
+          0.42 +
+          Math.pow(
+            Math.random(),
+            0.65
           ) *
-          2.25;
+          2.35;
 
         const theta =
           Math.random() *
@@ -276,15 +277,19 @@ export function SynapticNodes({
           radius *
           Math.cos(phi);
 
+        // Core proximity scale boost
+        const coreProximity =
+          1.0 - Math.min(1.0, (radius - 0.42) / 2.35);
+
         scale =
-          0.014 +
-          Math.random() *
-          0.014;
+          0.012 +
+          coreProximity * 0.008 +
+          Math.random() * 0.008;
 
       }
 
       /* -----------------------------------------------------
-         Short axon structures
+         Atmospheric synaptic pathways (18% organic branching)
          ----------------------------------------------------- */
 
       else {
@@ -298,7 +303,7 @@ export function SynapticNodes({
             numAxons
           );
 
-        const angle =
+        const baseAngle =
           (
             axonIndex /
             numAxons
@@ -306,33 +311,34 @@ export function SynapticNodes({
           Math.PI *
           2;
 
+        // Controlled radial distance with natural falloff
         const distance =
-          1.2 +
+          1.1 +
           Math.pow(
             Math.random(),
-            1.8
+            1.2
           ) *
-          2.8;
+          2.6;
 
-        const spiral =
-          distance *
-          1.35;
+        // Organic curve with gentle dispersion
+        const angle =
+          baseAngle + (distance - 1.1) * 0.28;
 
         const dispersion =
-          0.10 +
+          0.15 +
           distance *
-          0.055;
+          0.09;
 
         x =
           Math.cos(angle) *
           distance +
-          Math.cos(spiral) *
+          (Math.random() - 0.5) *
           dispersion;
 
         y =
           Math.sin(angle) *
           distance +
-          Math.sin(spiral) *
+          (Math.random() - 0.5) *
           dispersion;
 
         z =
@@ -341,12 +347,16 @@ export function SynapticNodes({
             0.5
           ) *
           distance *
-          0.22;
+          0.32;
+
+        // Subtle peripheral scale
+        const distFactor =
+          1.0 - Math.min(1.0, (distance - 1.1) / 2.6);
 
         scale =
-          0.011 +
-          Math.random() *
-          0.011;
+          0.009 +
+          distFactor * 0.006 +
+          Math.random() * 0.006;
       }
 
       const index =
