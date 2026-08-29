@@ -125,23 +125,23 @@ function NeuralSystem({
 
   /*
    * Smooth dynamic scale & perceived vertical centering based on viewport width
-   * (Phase 6.5.2 Vertical Composition Tuning)
-   * The axon starburst and atmospheric cloud have subtle upward visual energy,
-   * so a subtle responsive Y-offset balances top and bottom breathing room.
+   * (Phase 6.5.3 Camera Framing & 3D Immersion Tuning)
+   * Paired with camera position [0, 0, 9.8] and FOV 45 for natural spatial compression
+   * and rich foreground/background parallax.
    */
   const responsiveScale =
     viewport.width < 5.5
-      ? 0.98
+      ? 0.90
       : viewport.width < 8.5
-      ? 1.18
-      : 1.40;
+      ? 1.08
+      : 1.26;
 
   const responsivePositionY =
     viewport.width < 5.5
-      ? -0.15
+      ? -0.12
       : viewport.width < 8.5
-      ? -0.22
-      : -0.30;
+      ? -0.18
+      : -0.24;
 
 
   /* =======================================================
@@ -559,10 +559,10 @@ export function NeuralCoreCanvas({
             position: [
               0,
               0,
-              11,
+              9.8,
             ],
 
-            fov: 50,
+            fov: 45,
 
             near: 0.1,
 
