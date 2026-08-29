@@ -63,6 +63,10 @@ export interface SynapticNodeCloudProps {
   className?: string;
 
   showHUD?: boolean;
+
+  offsetX?: number;
+
+  offsetY?: number;
 }
 
 
@@ -82,6 +86,10 @@ interface NeuralSystemProps {
 
   secondaryColor: string;
 
+  offsetX?: number;
+
+  offsetY?: number;
+
   networkRef:
     React.MutableRefObject<SynapticNetworkState>;
 }
@@ -97,6 +105,8 @@ function NeuralSystem({
   attractionStrength,
   primaryColor,
   secondaryColor,
+  offsetX = 0,
+  offsetY = 0,
   networkRef,
 }: NeuralSystemProps) {
 
@@ -138,11 +148,14 @@ function NeuralSystem({
       : 1.28;
 
   const responsivePositionY =
-    viewport.width < 5.2
+    (viewport.width < 5.2
       ? -0.10
       : viewport.width < 8.5
       ? -0.16
-      : -0.22;
+      : -0.22) + offsetY;
+
+  const responsivePositionX =
+    offsetX;
 
 
   /* =======================================================
@@ -271,7 +284,7 @@ function NeuralSystem({
     <group
       ref={groupRef}
       scale={responsiveScale}
-      position={[0, responsivePositionY, 0]}
+      position={[responsivePositionX, responsivePositionY, 0]}
     >
 
       {/* =================================================
@@ -377,6 +390,10 @@ export function NeuralCoreCanvas({
   className = '',
 
   showHUD = true,
+
+  offsetX = 0,
+
+  offsetY = 0,
 }: SynapticNodeCloudProps) {
 
 
@@ -649,6 +666,14 @@ export function NeuralCoreCanvas({
 
             secondaryColor={
               secondaryColor
+            }
+
+            offsetX={
+              offsetX
+            }
+
+            offsetY={
+              offsetY
             }
 
             networkRef={
