@@ -1100,7 +1100,7 @@ export function SynapticNodes({
           scales[i] * depthFactor;
 
         /*
-         * 1. Active traveling signal (1.5x - 2.0x)
+         * 1. Active traveling signal (1.6x - 2.2x) - State 3 Click / Signal
          */
         if (
           signal > 0
@@ -1113,23 +1113,23 @@ export function SynapticNodes({
         }
 
         /*
-         * 2. Direct Hover Focus (1.35x)
+         * 2. Direct Hover Focus (1.25x) - State 2 Hover
          */
         else if (
           isDirectHover
         ) {
 
-          scale *= 1.35;
+          scale *= 1.25;
         }
 
         /*
-         * 3. Hovered Neighbor (1.15x)
+         * 3. Hovered Neighbor (1.10x) - State 2 Sub-network Preview
          */
         else if (
           isHoverNeighbor
         ) {
 
-          scale *= 1.15;
+          scale *= 1.10;
         }
 
         /*

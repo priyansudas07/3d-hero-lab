@@ -475,14 +475,14 @@ export function ConnectionLines({
           0;
 
         /*
-         * Hovered Node Edge Boost:
+         * Hovered Node Edge Boost (Restrained State 2 Hover):
          * If either endpoint touches the currently hovered node,
-         * boost edge brightness to provide direct focus preview.
+         * boost edge brightness subtly to provide clear focus preview.
          */
         if (hoveredNode !== null && hoveredNode !== undefined) {
           if (a === hoveredNode || b === hoveredNode) {
-            signalA = Math.max(signalA, 0.45);
-            signalB = Math.max(signalB, 0.45);
+            signalA = Math.max(signalA, 0.35);
+            signalB = Math.max(signalB, 0.35);
           }
         }
 
