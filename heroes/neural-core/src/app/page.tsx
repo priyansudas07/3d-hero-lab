@@ -4,6 +4,7 @@ import React, {
   useRef,
   useCallback,
 } from 'react';
+import Link from 'next/link';
 
 import {
   NeuralCoreCanvas,
@@ -276,11 +277,9 @@ export default function Home() {
           {/* =====================================================
               SPECIMEN 01: FEATURED SYSTEM (LARGE VISUAL ARTIFACT)
               ===================================================== */}
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Inspect Specimen 01.01: Neural Core 3D"
+          <Link
+            href="/projects/neural-core-3d"
+            aria-label="Inspect Specimen 01.01: Neural Core 3D Case Study"
             className="
               group
               block
@@ -362,18 +361,16 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </a>
+          </Link>
 
           {/* =====================================================
               SECONDARY SPECIMENS: 2-COLUMN ASYMMETRIC GRID
               ===================================================== */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* SPECIMEN 02 */}
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Inspect Specimen 01.02: Synaptic Dispatch Engine"
+            <Link
+              href="/projects/synaptic-dispatch-engine"
+              aria-label="Inspect Specimen 01.02: Synaptic Dispatch Engine Case Study"
               className="
                 group
                 block
@@ -426,14 +423,12 @@ export default function Home() {
                 <span>TYPESCRIPT · NODE · WEBSOCKETS</span>
                 <span className="text-[#00F0FF]">ACTIVE</span>
               </div>
-            </a>
+            </Link>
 
             {/* SPECIMEN 03 */}
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Inspect Specimen 01.03: Spatial Grid Partitioning"
+            <Link
+              href="/projects/spatial-grid-partitioning"
+              aria-label="Inspect Specimen 01.03: Spatial Grid Partitioning Case Study"
               className="
                 group
                 block
@@ -486,7 +481,7 @@ export default function Home() {
                 <span>DATA STRUCTURES · ALGORITHMS</span>
                 <span className="text-[#00F0FF]">STABLE</span>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
