@@ -594,6 +594,7 @@ export function NeuralCoreCanvas({
 
           dpr={targetDpr}
 
+          frameloop="always"
           gl={{
             antialias: true,
 
