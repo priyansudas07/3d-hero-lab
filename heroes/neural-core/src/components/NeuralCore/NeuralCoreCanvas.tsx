@@ -125,23 +125,24 @@ function NeuralSystem({
 
   /*
    * Smooth dynamic scale & perceived vertical centering based on viewport width
-   * (Phase 6.5.3 Camera Framing & 3D Immersion Tuning)
-   * Paired with camera position [0, 0, 9.8] and FOV 45 for natural spatial compression
-   * and rich foreground/background parallax.
+   * (Phase 6.5.6 Mobile Composition & Final Visual Polish)
+   * On mobile (< 5.2), gives the core a bold, compact, non-clipped presence (0.94x).
+   * On tablet (5.2 - 8.5), creates a balanced, atmospheric footprint (1.12x).
+   * On desktop (> 8.5), delivers full commanding centerpiece dominance (1.28x).
    */
   const responsiveScale =
-    viewport.width < 5.5
-      ? 0.90
+    viewport.width < 5.2
+      ? 0.94
       : viewport.width < 8.5
-      ? 1.08
-      : 1.26;
+      ? 1.12
+      : 1.28;
 
   const responsivePositionY =
-    viewport.width < 5.5
-      ? -0.12
+    viewport.width < 5.2
+      ? -0.10
       : viewport.width < 8.5
-      ? -0.18
-      : -0.24;
+      ? -0.16
+      : -0.22;
 
 
   /* =======================================================
