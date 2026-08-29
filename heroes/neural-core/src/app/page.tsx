@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <main className="relative w-full h-screen bg-[#030308] text-[#E2E8F0] overflow-hidden select-none flex flex-col justify-between p-6 md:p-10 font-sans">
       {/* =========================================================
-          LAYER 1: 3D NEURAL CANVAS CENTERPIECE
+          LAYER 1: 3D NEURAL CANVAS CENTERPIECE (SLIGHTLY OFFSET TO RIGHT FOR BALANCED SPLIT)
           ========================================================= */}
       <div className="absolute inset-0 z-0 pointer-events-auto">
         <NeuralCoreCanvas
@@ -16,6 +16,7 @@ export default function Home() {
           secondaryColor="#A040FF"
           backgroundColor="#030308"
           showHUD={false}
+          offsetX={1.15}
           className="w-full h-full"
         />
       </div>
@@ -48,18 +49,18 @@ export default function Home() {
       {/* =========================================================
           LAYER 3: ASYMMETRIC EDITORIAL BODY
           ========================================================= */}
-      <div className="relative z-10 w-full flex flex-col md:flex-row items-end justify-between gap-8 pointer-events-none">
+      <div className="relative z-10 w-full flex flex-col md:flex-row items-end justify-between gap-8 pointer-events-none mb-2">
         {/* Left Column: Typographic Title & Technical Summary */}
-        <div className="max-w-md pointer-events-auto">
-          <div className="font-mono text-[11px] text-[#00F0FF] uppercase tracking-[0.25em] mb-3">
+        <div className="max-w-lg pointer-events-auto">
+          <div className="font-mono text-[11px] text-[#00F0FF] uppercase tracking-[0.25em] mb-2.5">
             Real-Time Neural Topology
           </div>
 
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.05] mb-4">
+          <h1 className="text-3xl md:text-5xl lg:text-[54px] font-medium tracking-tight text-white leading-[1.04] mb-4">
             Directional graph flow in 3D space.
           </h1>
 
-          <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed font-normal">
+          <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed font-normal max-w-md">
             Autonomous multi-hop signal propagation across an instanced spatial grid. Central geodesic processing core coupled to real-time network activity.
           </p>
         </div>
