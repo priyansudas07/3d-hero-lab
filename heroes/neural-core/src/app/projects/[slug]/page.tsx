@@ -93,29 +93,48 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
       </section>
 
       {/* =========================================================
-          PRIMARY SPECIMEN VISUAL / SCHEMATIC
+          PRIMARY SPECIMEN VISUAL / SYSTEM PIPELINE FLOW
           ========================================================= */}
       <section className="max-w-5xl mx-auto mb-20">
-        <div className="w-full bg-[#06060E] border border-white/[0.08] p-8 sm:p-14 relative overflow-hidden flex flex-col items-center justify-center">
+        <div className="w-full bg-[#06060E] border border-white/[0.08] p-8 sm:p-12 relative overflow-hidden flex flex-col items-center justify-center">
           {/* Subtle Grid Backing */}
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:24px_24px]" />
 
-          <div className="relative z-10 text-center flex flex-col items-center max-w-md my-8">
-            <div className="w-20 h-20 rounded-full border border-[#00F0FF]/40 flex items-center justify-center mb-6 relative">
-              <div className="w-8 h-8 border border-[#A040FF]/60 rotate-45" />
-              <div className="absolute w-2.5 h-2.5 rounded-full bg-[#00F0FF] animate-ping" />
+          {/* System Pipeline Diagram */}
+          <div className="relative z-10 w-full mb-8">
+            <div className="text-center mb-8">
+              <div className="font-mono text-xs text-[#00F0FF] uppercase tracking-widest mb-1">
+                SYSTEM PIPELINE ARCHITECTURE
+              </div>
+              <div className="font-mono text-[11px] text-[#64748B]">
+                {project.tagline}
+              </div>
             </div>
 
-            <div className="font-mono text-sm text-white tracking-widest uppercase mb-2">
-              {project.title} // SYSTEM SCHEMATIC
+            {/* Visual Node-Flow Representation */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
+              <div className="p-4 border border-white/[0.08] bg-[#030308]/80 text-center">
+                <div className="text-[10px] text-[#64748B] uppercase mb-1">01 / INPUT & SPATIAL HASH</div>
+                <div className="text-white font-medium mb-1">3,500 Dynamic Coords</div>
+                <div className="text-[10px] text-[#00F0FF]/80">O(1) Cell Index</div>
+              </div>
+
+              <div className="p-4 border border-[#00F0FF]/30 bg-[#030308]/80 text-center relative">
+                <div className="text-[10px] text-[#64748B] uppercase mb-1">02 / GRAPH DISPATCH</div>
+                <div className="text-white font-medium mb-1">Signal Propagator</div>
+                <div className="text-[10px] text-[#00F0FF]/80">Multi-Hop Traversal</div>
+              </div>
+
+              <div className="p-4 border border-white/[0.08] bg-[#030308]/80 text-center">
+                <div className="text-[10px] text-[#64748B] uppercase mb-1">03 / GPU RENDER</div>
+                <div className="text-white font-medium mb-1">InstancedMesh & GLSL</div>
+                <div className="text-[10px] text-[#00F0FF]/80">60 FPS Sustained</div>
+              </div>
             </div>
-            <p className="font-mono text-xs text-[#64748B] leading-relaxed">
-              {project.tagline}
-            </p>
           </div>
 
           {/* Metric Badges */}
-          <div className="relative z-10 w-full grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 border-t border-white/[0.06] font-mono">
+          <div className="relative z-10 w-full grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-white/[0.06] font-mono">
             {project.metrics.map((m, idx) => (
               <div key={idx} className="text-center sm:text-left">
                 <div className="text-[10px] text-[#64748B] tracking-wider uppercase mb-0.5">
@@ -134,10 +153,10 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           TWO-COLUMN TECHNICAL SPECIFICATION SECTIONS
           ========================================================= */}
       <div className="max-w-5xl mx-auto flex flex-col gap-16 mb-24">
-        {/* Section 01: Context & Objectives */}
+        {/* Section 01: Context & Problem Statement */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-10 border-t border-white/[0.06]">
           <div className="md:col-span-4 font-mono text-xs text-[#00F0FF] tracking-wider uppercase">
-            01 // CONTEXT & OBJECTIVES
+            01 // PROBLEM & OBJECTIVES
           </div>
           <div className="md:col-span-8 flex flex-col gap-6 max-w-2xl">
             <p className="text-sm sm:text-base text-[#94A3B8] leading-relaxed font-normal">
@@ -154,10 +173,10 @@ export default async function ProjectDetailPage({ params }: ProjectPageProps) {
           </div>
         </section>
 
-        {/* Section 02: Architecture & Decisions */}
+        {/* Section 02: Architecture Decisions & Code Excerpts */}
         <section className="grid grid-cols-1 md:grid-cols-12 gap-8 pt-10 border-t border-white/[0.06]">
           <div className="md:col-span-4 font-mono text-xs text-[#00F0FF] tracking-wider uppercase">
-            02 // SYSTEM ARCHITECTURE
+            02 // TECHNICAL DECISIONS
           </div>
           <div className="md:col-span-8 flex flex-col gap-8 max-w-2xl">
             <p className="text-sm sm:text-base text-[#94A3B8] leading-relaxed font-normal">
