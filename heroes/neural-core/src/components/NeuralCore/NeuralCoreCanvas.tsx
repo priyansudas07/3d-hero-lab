@@ -9,6 +9,7 @@ import React, {
 import {
   Canvas,
   useFrame,
+  useThree,
 } from '@react-three/fiber';
 
 import {
@@ -60,6 +61,8 @@ export interface SynapticNodeCloudProps {
   backgroundColor?: string;
 
   className?: string;
+
+  showHUD?: boolean;
 }
 
 
@@ -85,7 +88,7 @@ interface NeuralSystemProps {
 
 
 /* =========================================================
-   NEURAL SYSTEM
+   NEURAL SYSTEM (RESPONSIVE 3D FRAMING)
    ========================================================= */
 
 function NeuralSystem({
@@ -100,6 +103,7 @@ function NeuralSystem({
   const groupRef =
     useRef<THREE.Group>(null);
 
+  const { viewport } = useThree();
 
   const targetRotation =
     useRef(
@@ -110,7 +114,6 @@ function NeuralSystem({
       )
     );
 
-
   const currentRotation =
     useRef(
       new THREE.Vector3(
@@ -119,6 +122,19 @@ function NeuralSystem({
         0
       )
     );
+
+  /*
+   * Smooth dynamic scale based on viewport width
+   * Mobile (< 6.0 width): scale down slightly to prevent clipping
+   * Tablet (6.0 - 10.0 width): balanced footprint
+   * Desktop (> 10.0 width): full cinematic presence
+   */
+  const responsiveScale =
+    viewport.width < 5.5
+      ? 0.78
+      : viewport.width < 8.5
+      ? 0.95
+      : 1.10;
 
 
   /* =======================================================
@@ -138,7 +154,6 @@ function NeuralSystem({
         return;
       }
 
-
       const time =
         state.clock.elapsedTime;
 
@@ -153,40 +168,31 @@ function NeuralSystem({
       const mouseY =
         state.pointer.y;
 
+      const tiltAmountX =
+        0.35;
 
-      /*
-       * Vertical mouse movement tilts around X.
-       *
-       * Horizontal mouse movement tilts around Y.
-       *
-       * Small Z component creates a subtle banking motion.
-       */
+      const tiltAmountY =
+        0.55;
 
-      const targetX =
-        mouseY *
-        0.28;
-
-      const targetY =
-        mouseX *
-        0.34;
-
-      const targetZ =
-        -mouseX *
-        0.045;
-
+      const tiltAmountZ =
+        0.12;
 
       targetRotation.current.x =
-        targetX;
+        -mouseY *
+        tiltAmountX;
 
       targetRotation.current.y =
-        targetY;
+        mouseX *
+        tiltAmountY;
 
       targetRotation.current.z =
-        targetZ;
+        mouseX *
+        mouseY *
+        tiltAmountZ;
 
 
       /* =====================================================
-         SMOOTH MOUSE RESPONSE
+         SMOOTH DAMPING
          ===================================================== */
 
       currentRotation.current.x =
@@ -197,7 +203,6 @@ function NeuralSystem({
           delta
         );
 
-
       currentRotation.current.y =
         THREE.MathUtils.damp(
           currentRotation.current.y,
@@ -205,7 +210,6 @@ function NeuralSystem({
           4.0,
           delta
         );
-
 
       currentRotation.current.z =
         THREE.MathUtils.damp(
@@ -219,14 +223,6 @@ function NeuralSystem({
       /* =====================================================
          AUTONOMOUS 3D ROTATION
          ===================================================== */
-
-      /*
-       * All three axes contribute to the motion.
-       *
-       * X = slow orbital tilt
-       * Y = primary rotation
-       * Z = subtle organic banking
-       */
 
       const autoX =
         time *
@@ -243,16 +239,13 @@ function NeuralSystem({
         ) *
         0.035;
 
-
       group.rotation.x =
         autoX +
         currentRotation.current.x;
 
-
       group.rotation.y =
         autoY +
         currentRotation.current.y;
-
 
       group.rotation.z =
         autoZ +
@@ -269,7 +262,7 @@ function NeuralSystem({
 
     <group
       ref={groupRef}
-      scale={1.15}
+      scale={responsiveScale}
     >
 
       {/* =================================================
@@ -277,7 +270,7 @@ function NeuralSystem({
           ================================================= */}
 
       <AmbientParticleField
-        count={220}
+        count={180}
         spread={14.0}
         primaryColor={primaryColor}
         secondaryColor={secondaryColor}
@@ -356,7 +349,7 @@ function NeuralSystem({
 
 
 /* =========================================================
-   MAIN CANVAS
+   MAIN CANVAS (COMMERCIAL REUSABLE COMPONENT)
    ========================================================= */
 
 export function NeuralCoreCanvas({
@@ -373,11 +366,13 @@ export function NeuralCoreCanvas({
   backgroundColor = '#030308',
 
   className = '',
+
+  showHUD = true,
 }: SynapticNodeCloudProps) {
 
 
   /* =======================================================
-     CLIENT MOUNT
+     CLIENT MOUNT & DEVICE PROFILE DETECTION
      ======================================================= */
 
   const [
@@ -386,10 +381,24 @@ export function NeuralCoreCanvas({
   ] =
     useState(false);
 
+  const [
+    isMobileDevice,
+    setIsMobileDevice,
+  ] =
+    useState(false);
+
 
   useEffect(() => {
 
     setMounted(true);
+
+    if (typeof window !== 'undefined') {
+      const isMobile =
+        window.innerWidth < 768 ||
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      setIsMobileDevice(isMobile);
+    }
 
   }, []);
 
@@ -428,7 +437,8 @@ export function NeuralCoreCanvas({
         className={`
           relative
           w-full
-          h-screen
+          h-full
+          min-h-[400px]
           flex
           items-center
           justify-center
@@ -449,26 +459,27 @@ export function NeuralCoreCanvas({
             className="
               w-16
               h-16
-              border-4
-              border-[#00F0FF]
-              border-t-transparent
-              rounded-full
-              animate-spin
               mx-auto
               mb-4
+              rounded-full
+              border
+              border-cyan-400/40
+              border-t-cyan-400
+              animate-spin
             "
           />
 
           <p
             className="
-              text-sm
-              tracking-widest
-              uppercase
-              text-cyan-400
               font-mono
+              text-xs
+              text-cyan-400/70
+              tracking-wider
             "
           >
-            Loading Synaptic Engine...
+
+            INITIALIZING NEURAL CORE...
+
           </p>
 
         </div>
@@ -479,7 +490,21 @@ export function NeuralCoreCanvas({
 
 
   /* =======================================================
-     MAIN
+     ADAPTIVE PERFORMANCE PARAMETERS
+     ======================================================= */
+
+  /*
+   * On mobile devices, clamp node count and DPR gracefully to ensure 60fps
+   */
+  const effectiveNodeCount =
+    isMobileDevice ? Math.min(nodeCount, 2200) : nodeCount;
+
+  const targetDpr: [number, number] =
+    isMobileDevice ? [1, 1.5] : [1, 2];
+
+
+  /* =======================================================
+     RENDER
      ======================================================= */
 
   return (
@@ -488,15 +513,15 @@ export function NeuralCoreCanvas({
       className={`
         relative
         w-full
-        h-screen
+        h-full
+        min-h-[400px]
         overflow-hidden
-        bg-[#030308]
         ${className}
       `}
     >
 
       {/* =================================================
-          ATMOSPHERIC BACKGROUND
+          ATMOSPHERIC RADIAL GLOW
           ================================================= */}
 
       <div
@@ -511,7 +536,7 @@ export function NeuralCoreCanvas({
 
 
       {/* =================================================
-          WEBGL
+          WEBGL CANVAS
           ================================================= */}
 
       <div
@@ -527,20 +552,17 @@ export function NeuralCoreCanvas({
             position: [
               0,
               0,
-              11,
+              11.5,
             ],
 
-            fov: 50,
+            fov: 48,
 
             near: 0.1,
 
             far: 100,
           }}
 
-          dpr={[
-            1,
-            2,
-          ]}
+          dpr={targetDpr}
 
           gl={{
             antialias: true,
@@ -603,7 +625,7 @@ export function NeuralCoreCanvas({
 
           <NeuralSystem
             nodeCount={
-              nodeCount
+              effectiveNodeCount
             }
 
             interactionRadius={
@@ -687,34 +709,36 @@ export function NeuralCoreCanvas({
 
 
       {/* =================================================
-          HUD
+          HUD (CONFIGURABLE)
           ================================================= */}
 
-      <div
-        className="
-          absolute
-          bottom-6
-          left-6
-          z-10
-          pointer-events-none
-          font-mono
-          text-[11px]
-          text-cyan-400/80
-          bg-slate-950/40
-          backdrop-blur-md
-          px-3
-          py-1.5
-          rounded-lg
-          border
-          border-cyan-500/20
-        "
-      >
+      {showHUD && (
+        <div
+          className="
+            absolute
+            bottom-6
+            left-6
+            z-10
+            pointer-events-none
+            font-mono
+            text-[11px]
+            text-cyan-400/80
+            bg-slate-950/40
+            backdrop-blur-md
+            px-3
+            py-1.5
+            rounded-lg
+            border
+            border-cyan-500/20
+          "
+        >
 
-        SYNAPTIC NODE CLOUD
-        {' // '}
-        CLICK NODE TO TRIGGER IMPULSE
+          SYNAPTIC NODE CLOUD
+          {' // '}
+          CLICK NODE TO TRIGGER IMPULSE
 
-      </div>
+        </div>
+      )}
 
     </div>
   );
