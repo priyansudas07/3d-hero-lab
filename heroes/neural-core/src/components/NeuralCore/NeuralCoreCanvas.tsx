@@ -131,10 +131,10 @@ function NeuralSystem({
    */
   const responsiveScale =
     viewport.width < 5.5
-      ? 0.78
+      ? 0.85
       : viewport.width < 8.5
-      ? 0.95
-      : 1.10;
+      ? 1.0
+      : 1.18;
 
 
   /* =======================================================
@@ -513,8 +513,7 @@ export function NeuralCoreCanvas({
       className={`
         relative
         w-full
-        h-full
-        min-h-[400px]
+        h-screen
         overflow-hidden
         ${className}
       `}
@@ -552,10 +551,10 @@ export function NeuralCoreCanvas({
             position: [
               0,
               0,
-              11.5,
+              11,
             ],
 
-            fov: 48,
+            fov: 50,
 
             near: 0.1,
 
