@@ -124,10 +124,10 @@ function NeuralSystem({
     );
 
   /*
-   * Smooth dynamic scale based on viewport width (Phase 6.5.1 Hero Scale Tuning)
-   * Mobile (< 5.5 width): 0.98 (compact, zero clipping on phones)
-   * Tablet (5.5 - 8.5 width): 1.18 (balanced footprint)
-   * Desktop (> 8.5 width): 1.40 (hero centerpiece visual dominance)
+   * Smooth dynamic scale & perceived vertical centering based on viewport width
+   * (Phase 6.5.2 Vertical Composition Tuning)
+   * The axon starburst and atmospheric cloud have subtle upward visual energy,
+   * so a subtle responsive Y-offset balances top and bottom breathing room.
    */
   const responsiveScale =
     viewport.width < 5.5
@@ -135,6 +135,13 @@ function NeuralSystem({
       : viewport.width < 8.5
       ? 1.18
       : 1.40;
+
+  const responsivePositionY =
+    viewport.width < 5.5
+      ? -0.15
+      : viewport.width < 8.5
+      ? -0.22
+      : -0.30;
 
 
   /* =======================================================
@@ -263,6 +270,7 @@ function NeuralSystem({
     <group
       ref={groupRef}
       scale={responsiveScale}
+      position={[0, responsivePositionY, 0]}
     >
 
       {/* =================================================
