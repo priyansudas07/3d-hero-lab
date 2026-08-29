@@ -276,13 +276,40 @@ export default function Home() {
           {/* =====================================================
               SPECIMEN 01: FEATURED SYSTEM (LARGE VISUAL ARTIFACT)
               ===================================================== */}
-          <article className="group relative border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-300 p-6 md:p-10 flex flex-col justify-between">
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Inspect Specimen 01.01: Neural Core 3D"
+            className="
+              group
+              block
+              relative
+              border
+              border-white/[0.08]
+              bg-white/[0.01]
+              hover:border-[#00F0FF]/40
+              focus-visible:border-[#00F0FF]
+              focus-visible:outline-none
+              focus-visible:ring-1
+              focus-visible:ring-[#00F0FF]/30
+              transition-all
+              duration-200
+              ease-out
+              p-6
+              md:p-10
+              cursor-pointer
+            "
+          >
             {/* Specimen Header Metadata */}
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-6 border-b border-white/[0.04] mb-8">
               <div className="flex items-center gap-4">
                 <span className="font-mono text-sm text-[#00F0FF] font-medium">01.01</span>
-                <h3 className="text-xl sm:text-3xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200">
-                  Neural Core 3D
+                <h3 className="text-xl sm:text-3xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200 flex items-center gap-2">
+                  <span>Neural Core 3D</span>
+                  <span className="inline-block text-[#00F0FF] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 text-lg">
+                    →
+                  </span>
                 </h3>
               </div>
               <div className="font-mono text-xs text-[#94A3B8] tracking-wider uppercase">
@@ -295,8 +322,8 @@ export default function Home() {
               {/* Geometric Schematic Grid Background */}
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:24px_24px]" />
               
-              {/* Technical Schematics Diagram */}
-              <div className="relative z-10 text-center flex flex-col items-center px-6">
+              {/* Technical Schematics Diagram (Subtle scale on hover) */}
+              <div className="relative z-10 text-center flex flex-col items-center px-6 transition-transform duration-300 ease-out group-hover:scale-[1.02]">
                 <div className="w-16 h-16 rounded-full border border-[#00F0FF]/40 flex items-center justify-center mb-4 relative">
                   <div className="w-6 h-6 border border-[#A040FF]/60 rotate-45" />
                   <div className="absolute w-2 h-2 rounded-full bg-[#00F0FF] animate-ping" />
@@ -305,7 +332,7 @@ export default function Home() {
                   INSTANCED 3D GRAPH // 3,500 NODES
                 </div>
                 <div className="font-mono text-[10px] text-[#64748B] tracking-wider max-w-sm">
-                  MULTI-HOP IMPULSE CASING • SPATIAL GRID PARTITIONING • GLSL Z-DEPTH ATTENUATION
+                  MULTI-HOP IMPULSE CASCADES • SPATIAL GRID PARTITIONING • GLSL Z-DEPTH ATTENUATION
                 </div>
               </div>
 
@@ -335,27 +362,54 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </article>
+          </a>
 
           {/* =====================================================
               SECONDARY SPECIMENS: 2-COLUMN ASYMMETRIC GRID
               ===================================================== */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* SPECIMEN 02 */}
-            <article className="group relative border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-300 p-6 md:p-8 flex flex-col justify-between">
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Inspect Specimen 01.02: Synaptic Dispatch Engine"
+              className="
+                group
+                block
+                relative
+                border
+                border-white/[0.08]
+                bg-white/[0.01]
+                hover:border-[#00F0FF]/40
+                focus-visible:border-[#00F0FF]
+                focus-visible:outline-none
+                focus-visible:ring-1
+                focus-visible:ring-[#00F0FF]/30
+                transition-all
+                duration-200
+                ease-out
+                p-6
+                md:p-8
+                cursor-pointer
+              "
+            >
               <div>
                 <div className="flex items-center justify-between gap-4 pb-4 border-b border-white/[0.04] mb-6">
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs text-[#00F0FF]">01.02</span>
-                    <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200">
-                      Synaptic Dispatch Engine
+                    <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200 flex items-center gap-2">
+                      <span>Synaptic Dispatch Engine</span>
+                      <span className="inline-block text-[#00F0FF] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 text-sm">
+                        →
+                      </span>
                     </h3>
                   </div>
                   <span className="font-mono text-[10px] text-[#64748B] uppercase">2025</span>
                 </div>
 
-                <div className="w-full h-44 bg-[#06060E] border border-white/[0.06] mb-6 flex flex-col items-center justify-center p-4 relative">
-                  <div className="font-mono text-[10px] text-[#00F0FF] tracking-widest uppercase mb-1">
+                <div className="w-full h-44 bg-[#06060E] border border-white/[0.06] mb-6 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                  <div className="font-mono text-[10px] text-[#00F0FF] tracking-widest uppercase mb-1 transition-transform duration-300 ease-out group-hover:scale-[1.02]">
                     ASYNCHRONOUS EVENT PIPELINE
                   </div>
                   <div className="font-mono text-[9px] text-[#64748B] text-center max-w-xs">
@@ -372,23 +426,50 @@ export default function Home() {
                 <span>TYPESCRIPT · NODE · WEBSOCKETS</span>
                 <span className="text-[#00F0FF]">ACTIVE</span>
               </div>
-            </article>
+            </a>
 
             {/* SPECIMEN 03 */}
-            <article className="group relative border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-300 p-6 md:p-8 flex flex-col justify-between">
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Inspect Specimen 01.03: Spatial Grid Partitioning"
+              className="
+                group
+                block
+                relative
+                border
+                border-white/[0.08]
+                bg-white/[0.01]
+                hover:border-[#00F0FF]/40
+                focus-visible:border-[#00F0FF]
+                focus-visible:outline-none
+                focus-visible:ring-1
+                focus-visible:ring-[#00F0FF]/30
+                transition-all
+                duration-200
+                ease-out
+                p-6
+                md:p-8
+                cursor-pointer
+              "
+            >
               <div>
                 <div className="flex items-center justify-between gap-4 pb-4 border-b border-white/[0.04] mb-6">
                   <div className="flex items-center gap-3">
                     <span className="font-mono text-xs text-[#00F0FF]">01.03</span>
-                    <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200">
-                      Spatial Grid Partitioning
+                    <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200 flex items-center gap-2">
+                      <span>Spatial Grid Partitioning</span>
+                      <span className="inline-block text-[#00F0FF] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-200 text-sm">
+                        →
+                      </span>
                     </h3>
                   </div>
                   <span className="font-mono text-[10px] text-[#64748B] uppercase">2025</span>
                 </div>
 
-                <div className="w-full h-44 bg-[#06060E] border border-white/[0.06] mb-6 flex flex-col items-center justify-center p-4 relative">
-                  <div className="font-mono text-[10px] text-[#00F0FF] tracking-widest uppercase mb-1">
+                <div className="w-full h-44 bg-[#06060E] border border-white/[0.06] mb-6 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+                  <div className="font-mono text-[10px] text-[#00F0FF] tracking-widest uppercase mb-1 transition-transform duration-300 ease-out group-hover:scale-[1.02]">
                     SUB-MILLISECOND LOOKUP HASH
                   </div>
                   <div className="font-mono text-[9px] text-[#64748B] text-center max-w-xs">
@@ -405,7 +486,7 @@ export default function Home() {
                 <span>DATA STRUCTURES · ALGORITHMS</span>
                 <span className="text-[#00F0FF]">STABLE</span>
               </div>
-            </article>
+            </a>
           </div>
         </div>
       </section>
