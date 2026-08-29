@@ -75,8 +75,6 @@ export const metadata: Metadata = {
   },
 };
 
-import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
-
 export default function RootLayout({
   children,
 }: {
@@ -112,7 +110,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#030308] text-[#E2E8F0]">
-        <SmoothScrollProvider>{children}</SmoothScrollProvider>
+        {children}
       </body>
     </html>
   );
