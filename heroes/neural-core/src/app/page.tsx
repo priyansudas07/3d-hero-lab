@@ -98,10 +98,10 @@ export default function Home() {
               WORK
             </a>
             <a
-              href="#archive"
+              href="#about"
               className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
             >
-              ARCHIVE
+              ABOUT
             </a>
             <a
               href="https://github.com"
@@ -237,7 +237,7 @@ export default function Home() {
           ========================================================= */}
       <section
         id="projects"
-        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-28 pb-36 border-t border-white/[0.06]"
+        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-28 pb-32 border-t border-white/[0.06]"
       >
         {/* Section Identifier & Metadata Header */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.04]">
@@ -274,9 +274,7 @@ export default function Home() {
 
         {/* Curated Project Specimens (Asymmetric Editorial Rhythm) */}
         <div className="flex flex-col gap-16">
-          {/* =====================================================
-              SPECIMEN 01: FEATURED SYSTEM (LARGE VISUAL ARTIFACT)
-              ===================================================== */}
+          {/* SPECIMEN 01: FEATURED SYSTEM */}
           <Link
             href="/projects/neural-core-3d"
             aria-label="Inspect Specimen 01.01: Neural Core 3D Case Study"
@@ -300,7 +298,6 @@ export default function Home() {
               cursor-pointer
             "
           >
-            {/* Specimen Header Metadata */}
             <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-6 border-b border-white/[0.04] mb-8">
               <div className="flex items-center gap-4">
                 <span className="font-mono text-sm text-[#00F0FF] font-medium">01.01</span>
@@ -316,12 +313,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Specimen Visual Preview Window */}
             <div className="relative w-full h-64 sm:h-96 bg-[#06060E] border border-white/[0.06] overflow-hidden mb-8 flex items-center justify-center">
-              {/* Geometric Schematic Grid Background */}
               <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:24px_24px]" />
-              
-              {/* Technical Schematics Diagram (Subtle scale on hover) */}
               <div className="relative z-10 text-center flex flex-col items-center px-6 transition-transform duration-300 ease-out group-hover:scale-[1.02]">
                 <div className="w-16 h-16 rounded-full border border-[#00F0FF]/40 flex items-center justify-center mb-4 relative">
                   <div className="w-6 h-6 border border-[#A040FF]/60 rotate-45" />
@@ -334,8 +327,6 @@ export default function Home() {
                   MULTI-HOP IMPULSE CASCADES • SPATIAL GRID PARTITIONING • GLSL Z-DEPTH ATTENUATION
                 </div>
               </div>
-
-              {/* Edge Coordinates */}
               <div className="absolute bottom-3 left-4 font-mono text-[9px] text-[#64748B]">
                 COORD // [X: 0.00, Y: 0.00, Z: 9.80]
               </div>
@@ -344,14 +335,12 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Specimen Description & Footer Specs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end pt-4 border-t border-white/[0.04]">
               <div className="md:col-span-2">
                 <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed font-normal max-w-2xl">
                   A high-density 3D neural simulation running 3,500 instanced vertices with graph-bound traveling pulses, raycasting hover recognition, and asymmetric core energy coupling without frame drops.
                 </p>
               </div>
-
               <div className="flex flex-col md:items-end gap-1.5 font-mono text-[11px]">
                 <div className="text-[#64748B]">
                   STACK: <span className="text-[#E2E8F0]">THREE.JS · REACT THREE FIBER · GLSL</span>
@@ -363,9 +352,7 @@ export default function Home() {
             </div>
           </Link>
 
-          {/* =====================================================
-              SECONDARY SPECIMENS: 2-COLUMN ASYMMETRIC GRID
-              ===================================================== */}
+          {/* SECONDARY SPECIMENS: 2-COLUMN GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* SPECIMEN 02 */}
             <Link
@@ -482,6 +469,99 @@ export default function Home() {
                 <span className="text-[#00F0FF]">STABLE</span>
               </div>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================
+          SECTION 02: ABOUT / PERSONAL SYSTEM
+          ========================================================= */}
+      <section
+        id="about"
+        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-24 pb-36 border-t border-white/[0.06]"
+      >
+        {/* Section Identifier & Technical Index */}
+        <div className="flex items-center justify-between mb-12 pb-4 border-b border-white/[0.04]">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs text-[#00F0FF] tracking-widest uppercase">
+              02 // ABOUT
+            </span>
+            <span className="text-white/20">/</span>
+            <span className="font-mono text-xs text-[#94A3B8] tracking-wider uppercase">
+              PROFILE & FOCUS
+            </span>
+          </div>
+
+          <div className="font-mono text-[11px] text-[#64748B] tracking-widest uppercase hidden sm:block">
+            DIRECTORATE // 2026
+          </div>
+        </div>
+
+        {/* Editorial Profile Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16 items-start">
+          {/* Left Column: Personal Statement & Approach */}
+          <div className="md:col-span-7 flex flex-col gap-6">
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-white leading-[1.1]">
+              Investigating real-time graphics, system pipelines, and computational interfaces.
+            </h2>
+
+            <div className="flex flex-col gap-4 text-xs sm:text-sm text-[#94A3B8] leading-relaxed font-normal max-w-xl">
+              <p>
+                I am a Computer Science & Engineering student focused on building software where performance and spatial interactivity intersect. I enjoy understanding how complex algorithms behave under constraints, then engineering prototypes to test those ideas.
+              </p>
+              <p>
+                My work centers on real-time WebGL rendering, topological graph algorithms, and asynchronous event architectures. Rather than relying on generic templates, I build systems from fundamental mathematical and graphical principles.
+              </p>
+            </div>
+          </div>
+
+          {/* Right Column: Structured Technical Details */}
+          <div className="md:col-span-5 flex flex-col gap-8 font-mono text-xs border-l border-white/[0.06] pl-6 md:pl-10">
+            {/* Field 01: Core Domains */}
+            <div>
+              <div className="text-[10px] text-[#64748B] uppercase tracking-widest mb-2">
+                FOCUS AREAS
+              </div>
+              <div className="text-white flex flex-col gap-1">
+                <div>REAL-TIME WEBGL & THREE.JS</div>
+                <div>DISTRIBUTED EVENT PIPELINES</div>
+                <div>SPATIAL PARTITIONING ALGORITHMS</div>
+              </div>
+            </div>
+
+            {/* Field 02: Stack */}
+            <div>
+              <div className="text-[10px] text-[#64748B] uppercase tracking-widest mb-2">
+                TECHNICAL FOUNDATION
+              </div>
+              <div className="text-neutral-300 leading-relaxed">
+                TYPESCRIPT · GLSL · REACT · NODE.JS · THREE.JS · PYTHON · C++
+              </div>
+            </div>
+
+            {/* Field 03: Current Exploration */}
+            <div>
+              <div className="text-[10px] text-[#64748B] uppercase tracking-widest mb-2">
+                CURRENT EXPLORATION
+              </div>
+              <div className="text-[#00F0FF]/90">
+                GPU Instancing, Compute Shaders, and High-Throughput Event Streaming.
+              </div>
+            </div>
+
+            {/* Action / Contact Route */}
+            <div className="pt-6 border-t border-white/[0.04] flex items-center justify-between">
+              <span className="text-[11px] text-[#64748B]">OPEN FOR COLLABORATION</span>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#00F0FF] hover:underline flex items-center gap-1"
+              >
+                <span>GET IN TOUCH</span>
+                <span>↗</span>
+              </a>
+            </div>
           </div>
         </div>
       </section>
