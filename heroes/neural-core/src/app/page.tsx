@@ -60,7 +60,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="relative w-full bg-[#030308] text-[#E2E8F0] select-none font-sans scroll-smooth">
+    <div className="relative w-full bg-[#030308] text-[#E2E8F0] select-none font-sans">
       {/* =========================================================
           ACCESSIBILITY: KEYBOARD SKIP LINK
           ========================================================= */}
