@@ -62,9 +62,36 @@ export default function Home() {
   return (
     <div className="relative w-full bg-[#030308] text-[#E2E8F0] select-none font-sans scroll-smooth">
       {/* =========================================================
+          ACCESSIBILITY: KEYBOARD SKIP LINK
+          ========================================================= */}
+      <a
+        href="#main-content"
+        className="
+          sr-only
+          focus:not-sr-only
+          focus:fixed
+          focus:top-4
+          focus:left-4
+          focus:z-50
+          focus:px-4
+          focus:py-2
+          focus:bg-[#00F0FF]
+          focus:text-[#030308]
+          focus:font-mono
+          focus:text-xs
+          focus:font-semibold
+          focus:tracking-wider
+          focus:uppercase
+          focus:shadow-lg
+        "
+      >
+        Skip to main content
+      </a>
+
+      {/* =========================================================
           HERO SECTION (RESPONSIVE FULLSCREEN CENTERPIECE)
           ========================================================= */}
-      <section className="relative w-full min-h-[640px] h-screen overflow-hidden flex flex-col justify-between p-6 md:p-10">
+      <section aria-label="Hero Introduction" className="relative w-full min-h-[640px] h-screen overflow-hidden flex flex-col justify-between p-6 md:p-10">
         {/* =======================================================
             LAYER 1: 3D NEURAL CANVAS CENTERPIECE
             ======================================================= */}
@@ -250,35 +277,40 @@ export default function Home() {
       </section>
 
       {/* =========================================================
-          SECTION 01: CURATED TECHNICAL ARCHIVE
+          MAIN ACCESSIBLE CONTENT LANDMARK
           ========================================================= */}
-      <section
-        id="projects"
-        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-28 pb-32 border-t border-white/[0.06]"
-      >
-        {/* Section Identifier & Metadata Header */}
-        <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.04]">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-xs text-[#00F0FF] tracking-widest uppercase">
-              01 // WORK
-            </span>
-            <span className="text-white/20">/</span>
-            <span className="font-mono text-xs text-[#94A3B8] tracking-wider uppercase">
-              SYSTEMS ARCHIVE
-            </span>
+      <main id="main-content" className="w-full">
+        {/* =======================================================
+            SECTION 01: CURATED TECHNICAL ARCHIVE
+            ======================================================= */}
+        <section
+          id="projects"
+          aria-labelledby="heading-projects"
+          className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-28 pb-32 border-t border-white/[0.06]"
+        >
+          {/* Section Identifier & Metadata Header */}
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.04]">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-xs text-[#00F0FF] tracking-widest uppercase">
+                01 // WORK
+              </span>
+              <span className="text-white/20">/</span>
+              <span className="font-mono text-xs text-[#94A3B8] tracking-wider uppercase">
+                SYSTEMS ARCHIVE
+              </span>
+            </div>
+
+            <div className="font-mono text-[11px] text-[#64748B] tracking-widest uppercase hidden sm:block">
+              CATALOG // 2025 — 2026
+            </div>
           </div>
 
-          <div className="font-mono text-[11px] text-[#64748B] tracking-widest uppercase hidden sm:block">
-            CATALOG // 2025 — 2026
-          </div>
-        </div>
-
-        {/* Section Title & Context */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
-          <div className="max-w-xl">
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-medium tracking-tight text-white leading-[1.08] mb-4">
-              Engineered software and graphics specimens.
-            </h2>
+          {/* Section Title & Context */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <div className="max-w-xl">
+              <h2 id="heading-projects" className="text-2xl sm:text-4xl md:text-5xl font-medium tracking-tight text-white leading-[1.08] mb-4">
+                Engineered software and graphics specimens.
+              </h2>
             <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed font-normal">
               A curated body of real-time WebGL engines, distributed simulation architectures, and high-performance algorithms.
             </p>
@@ -495,6 +527,7 @@ export default function Home() {
           ========================================================= */}
       <section
         id="about"
+        aria-labelledby="heading-about"
         className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-24 pb-32 border-t border-white/[0.06]"
       >
         {/* Section Identifier & Technical Index */}
@@ -518,7 +551,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Left Column: Personal Statement & Approach */}
           <div className="md:col-span-7 flex flex-col gap-6">
-            <h2 className="text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-white leading-[1.1]">
+            <h2 id="heading-about" className="text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-white leading-[1.1]">
               Investigating real-time graphics, system pipelines, and computational interfaces.
             </h2>
 
@@ -574,6 +607,7 @@ export default function Home() {
           ========================================================= */}
       <section
         id="contact"
+        aria-labelledby="heading-contact"
         className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-24 pb-36 border-t border-white/[0.06]"
       >
         {/* Section Identifier */}
@@ -596,7 +630,7 @@ export default function Home() {
         {/* Contact Composition */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-16 items-start mb-20">
           <div className="md:col-span-7 flex flex-col gap-6">
-            <h2 className="text-3xl sm:text-5xl font-medium tracking-tight text-white leading-[1.08]">
+            <h2 id="heading-contact" className="text-3xl sm:text-5xl font-medium tracking-tight text-white leading-[1.08]">
               Open for collaboration, research, and technical discussions.
             </h2>
             <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed max-w-md">
@@ -614,13 +648,14 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <a
                   href="mailto:hello@synapse.studio"
-                  className="text-sm sm:text-base text-white hover:text-[#00F0FF] transition-colors duration-200"
+                  className="text-sm sm:text-base text-white hover:text-[#00F0FF] transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#00F0FF]"
                 >
                   hello@synapse.studio
                 </a>
 
                 <button
                   onClick={handleCopyEmail}
+                  aria-label="Copy contact email address to clipboard"
                   className="
                     self-start
                     sm:self-auto
@@ -631,6 +666,9 @@ export default function Home() {
                     hover:border-[#00F0FF]/50
                     hover:text-[#00F0FF]
                     active:scale-[0.97]
+                    focus-visible:outline-none
+                    focus-visible:ring-1
+                    focus-visible:ring-[#00F0FF]
                     text-[11px]
                     uppercase
                     tracking-wider
@@ -650,7 +688,8 @@ export default function Home() {
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#94A3B8] hover:text-white transition-colors duration-200 flex items-center gap-1.5"
+                aria-label="Visit Synapse Lab GitHub repository (opens in new tab)"
+                className="text-[#94A3B8] hover:text-white transition-colors duration-200 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40 px-1 py-0.5"
               >
                 <span>GITHUB</span>
                 <span className="text-[#00F0FF]">↗</span>
@@ -660,7 +699,8 @@ export default function Home() {
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#94A3B8] hover:text-white transition-colors duration-200 flex items-center gap-1.5"
+                aria-label="Visit LinkedIn profile (opens in new tab)"
+                className="text-[#94A3B8] hover:text-white transition-colors duration-200 flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40 px-1 py-0.5"
               >
                 <span>LINKEDIN</span>
                 <span className="text-[#00F0FF]">↗</span>
@@ -669,12 +709,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Minimal Footer */}
-        <div className="pt-8 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-[#64748B]">
+        {/* Minimal Accessible Footer */}
+        <footer role="contentinfo" className="pt-8 border-t border-white/[0.04] flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-[#64748B]">
           <div>SYNAPSE LAB // EXPERIMENTAL SYSTEMS</div>
           <div>© {new Date().getFullYear()} · ALL SPECIMENS DOCUMENTED</div>
-        </div>
+        </footer>
       </section>
+      </main>
     </div>
   );
 }
