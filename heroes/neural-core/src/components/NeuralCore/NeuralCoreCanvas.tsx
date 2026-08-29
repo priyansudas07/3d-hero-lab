@@ -155,7 +155,9 @@ function NeuralSystem({
       : -0.22) + offsetY;
 
   const responsivePositionX =
-    offsetX;
+    viewport.width < 8.5
+      ? 0
+      : offsetX;
 
 
   /* =======================================================

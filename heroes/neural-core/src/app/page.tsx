@@ -62,9 +62,9 @@ export default function Home() {
   return (
     <div className="relative w-full bg-[#030308] text-[#E2E8F0] select-none font-sans scroll-smooth">
       {/* =========================================================
-          HERO SECTION (100vh FULLSCREEN CENTERPIECE)
+          HERO SECTION (RESPONSIVE FULLSCREEN CENTERPIECE)
           ========================================================= */}
-      <section className="relative w-full h-screen overflow-hidden flex flex-col justify-between p-6 md:p-10">
+      <section className="relative w-full min-h-[640px] h-screen overflow-hidden flex flex-col justify-between p-6 md:p-10">
         {/* =======================================================
             LAYER 1: 3D NEURAL CANVAS CENTERPIECE
             ======================================================= */}
