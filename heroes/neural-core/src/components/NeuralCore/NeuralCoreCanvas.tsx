@@ -394,7 +394,9 @@ export function NeuralCoreCanvas({
   offsetX = 0,
 
   offsetY = 0,
-}: SynapticNodeCloudProps) {
+
+  networkRef: externalNetworkRef,
+}: SynapticNodeCloudProps & { networkRef?: React.MutableRefObject<SynapticNetworkState> }) {
 
 
   /* =======================================================
@@ -433,7 +435,7 @@ export function NeuralCoreCanvas({
      SHARED NETWORK
      ======================================================= */
 
-  const networkRef =
+  const internalNetworkRef =
     useRef<SynapticNetworkState>({
       positions: null,
 
@@ -449,6 +451,8 @@ export function NeuralCoreCanvas({
       signalPropagator:
         null,
     });
+
+  const networkRef = externalNetworkRef || internalNetworkRef;
 
 
   /* =======================================================
