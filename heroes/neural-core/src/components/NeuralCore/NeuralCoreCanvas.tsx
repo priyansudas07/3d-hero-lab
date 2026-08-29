@@ -473,64 +473,29 @@ export function NeuralCoreCanvas({
 
 
   /* =======================================================
-     SSR FALLBACK
+     SSR FALLBACK (Silent Instant Match)
      ======================================================= */
 
   if (!mounted) {
-
     return (
-
       <div
         className={`
           relative
           w-full
-          h-full
-          min-h-[400px]
-          flex
-          items-center
-          justify-center
+          ${className ? className : 'h-screen'}
+          overflow-hidden
           bg-[#030308]
-          text-white
-          ${className}
         `}
       >
-
         <div
           className="
-            text-center
-            animate-pulse
+            absolute
+            inset-0
+            z-0
+            pointer-events-none
+            bg-[radial-gradient(circle_at_center,_rgba(0,240,255,0.08)_0%,_rgba(160,64,255,0.04)_45%,_rgba(3,3,8,1)_85%)]
           "
-        >
-
-          <div
-            className="
-              w-16
-              h-16
-              mx-auto
-              mb-4
-              rounded-full
-              border
-              border-cyan-400/40
-              border-t-cyan-400
-              animate-spin
-            "
-          />
-
-          <p
-            className="
-              font-mono
-              text-xs
-              text-cyan-400/70
-              tracking-wider
-            "
-          >
-
-            INITIALIZING NEURAL CORE...
-
-          </p>
-
-        </div>
-
+        />
       </div>
     );
   }
