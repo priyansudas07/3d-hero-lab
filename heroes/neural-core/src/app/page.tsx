@@ -50,7 +50,7 @@ export default function Home() {
   return (
     <div className="relative w-full bg-[#030308] text-[#E2E8F0] select-none font-sans scroll-smooth">
       {/* =========================================================
-          HERO SECTION (LAYERED 100vh FULLSCREEN CONTAINER)
+          HERO SECTION (100vh FULLSCREEN CENTERPIECE)
           ========================================================= */}
       <section className="relative w-full h-screen overflow-hidden flex flex-col justify-between p-6 md:p-10">
         {/* =======================================================
@@ -94,13 +94,13 @@ export default function Home() {
               href="#projects"
               className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
             >
-              PROJECTS
+              WORK
             </a>
             <a
-              href="#experiments"
+              href="#archive"
               className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
             >
-              EXPERIMENTS
+              ARCHIVE
             </a>
             <a
               href="https://github.com"
@@ -225,20 +225,20 @@ export default function Home() {
             href="#projects"
             className="flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors duration-200 pointer-events-auto"
           >
-            <span>SCROLL TO EXPLORE</span>
+            <span>SCROLL TO ARCHIVE</span>
             <span className="text-[#00F0FF]">↓</span>
           </a>
         </footer>
       </section>
 
       {/* =========================================================
-          SECTION 01: SELECTED WORK TRANSITION & INTRODUCTION
+          SECTION 01: CURATED TECHNICAL ARCHIVE
           ========================================================= */}
       <section
         id="projects"
         className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-28 pb-36 border-t border-white/[0.06]"
       >
-        {/* Section Identifier & Technical Index */}
+        {/* Section Identifier & Metadata Header */}
         <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.04]">
           <div className="flex items-center gap-3">
             <span className="font-mono text-xs text-[#00F0FF] tracking-widest uppercase">
@@ -246,76 +246,166 @@ export default function Home() {
             </span>
             <span className="text-white/20">/</span>
             <span className="font-mono text-xs text-[#94A3B8] tracking-wider uppercase">
-              SELECTED PROJECTS
+              SYSTEMS ARCHIVE
             </span>
           </div>
 
           <div className="font-mono text-[11px] text-[#64748B] tracking-widest uppercase hidden sm:block">
-            INDEX // 2024 — 2026
+            CATALOG // 2025 — 2026
           </div>
         </div>
 
-        {/* Section Header & Short Technical Context */}
+        {/* Section Title & Context */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="max-w-xl">
             <h2 className="text-2xl sm:text-4xl md:text-5xl font-medium tracking-tight text-white leading-[1.08] mb-4">
-              Engineered software and interactive graphics.
+              Engineered software and graphics specimens.
             </h2>
             <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed font-normal">
-              A curation of full-stack applications, real-time WebGL experiments, and algorithmic simulation systems designed with precision.
+              A curated body of real-time WebGL engines, distributed simulation architectures, and high-performance algorithms.
             </p>
           </div>
 
           <div className="font-mono text-[11px] text-[#64748B] uppercase tracking-wider">
-            [ 03 SYSTEMS ACTIVE ]
+            [ 03 SPECIMENS DOCUMENTED ]
           </div>
         </div>
 
-        {/* Initial Clean Project Placeholders (Uncluttered Baseline) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-200">
-            <div className="font-mono text-[10px] text-[#00F0FF] uppercase tracking-wider mb-3">
-              01.01 // GRAPHICS
+        {/* Curated Project Specimens (Asymmetric Editorial Rhythm) */}
+        <div className="flex flex-col gap-16">
+          {/* =====================================================
+              SPECIMEN 01: FEATURED SYSTEM (LARGE VISUAL ARTIFACT)
+              ===================================================== */}
+          <article className="group relative border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-300 p-6 md:p-10 flex flex-col justify-between">
+            {/* Specimen Header Metadata */}
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 pb-6 border-b border-white/[0.04] mb-8">
+              <div className="flex items-center gap-4">
+                <span className="font-mono text-sm text-[#00F0FF] font-medium">01.01</span>
+                <h3 className="text-xl sm:text-3xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200">
+                  Neural Core 3D
+                </h3>
+              </div>
+              <div className="font-mono text-xs text-[#94A3B8] tracking-wider uppercase">
+                GRAPHICS ENGINE // REAL-TIME WEBGL
+              </div>
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">
-              Neural Core 3D
-            </h3>
-            <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
-              Real-time 3D graph simulation with instanced nodes and multi-hop impulse cascades.
-            </p>
-            <div className="font-mono text-[10px] text-[#64748B]">
-              THREE.JS / WEBGL / GLSL
-            </div>
-          </div>
 
-          <div className="p-6 border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-200">
-            <div className="font-mono text-[10px] text-[#00F0FF] uppercase tracking-wider mb-3">
-              01.02 // DISTRIBUTED SYSTEMS
-            </div>
-            <h3 className="text-lg font-medium text-white mb-2">
-              Synaptic Engine
-            </h3>
-            <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
-              High-throughput asynchronous event dispatcher with deterministic state evaluation.
-            </p>
-            <div className="font-mono text-[10px] text-[#64748B]">
-              TYPESCRIPT / NODE / WEBSOCKETS
-            </div>
-          </div>
+            {/* Specimen Visual Preview Window */}
+            <div className="relative w-full h-64 sm:h-96 bg-[#06060E] border border-white/[0.06] overflow-hidden mb-8 flex items-center justify-center">
+              {/* Geometric Schematic Grid Background */}
+              <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:24px_24px]" />
+              
+              {/* Technical Schematics Diagram */}
+              <div className="relative z-10 text-center flex flex-col items-center px-6">
+                <div className="w-16 h-16 rounded-full border border-[#00F0FF]/40 flex items-center justify-center mb-4 relative">
+                  <div className="w-6 h-6 border border-[#A040FF]/60 rotate-45" />
+                  <div className="absolute w-2 h-2 rounded-full bg-[#00F0FF] animate-ping" />
+                </div>
+                <div className="font-mono text-xs text-white tracking-widest uppercase mb-1">
+                  INSTANCED 3D GRAPH // 3,500 NODES
+                </div>
+                <div className="font-mono text-[10px] text-[#64748B] tracking-wider max-w-sm">
+                  MULTI-HOP IMPULSE CASING • SPATIAL GRID PARTITIONING • GLSL Z-DEPTH ATTENUATION
+                </div>
+              </div>
 
-          <div className="p-6 border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-200">
-            <div className="font-mono text-[10px] text-[#00F0FF] uppercase tracking-wider mb-3">
-              01.03 // ALGORITHMS
+              {/* Edge Coordinates */}
+              <div className="absolute bottom-3 left-4 font-mono text-[9px] text-[#64748B]">
+                COORD // [X: 0.00, Y: 0.00, Z: 9.80]
+              </div>
+              <div className="absolute bottom-3 right-4 font-mono text-[9px] text-[#00F0FF]/70">
+                CASCADE SPEED // 2.40
+              </div>
             </div>
-            <h3 className="text-lg font-medium text-white mb-2">
-              Spatial Grid Partitioning
-            </h3>
-            <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
-              Sub-millisecond spatial neighborhood search across thousands of active 3D coordinates.
-            </p>
-            <div className="font-mono text-[10px] text-[#64748B]">
-              SPATIAL HASHING / PERFORMANCE
+
+            {/* Specimen Description & Footer Specs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end pt-4 border-t border-white/[0.04]">
+              <div className="md:col-span-2">
+                <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed font-normal max-w-2xl">
+                  A high-density 3D neural simulation running 3,500 instanced vertices with graph-bound traveling pulses, raycasting hover recognition, and asymmetric core energy coupling without frame drops.
+                </p>
+              </div>
+
+              <div className="flex flex-col md:items-end gap-1.5 font-mono text-[11px]">
+                <div className="text-[#64748B]">
+                  STACK: <span className="text-[#E2E8F0]">THREE.JS · REACT THREE FIBER · GLSL</span>
+                </div>
+                <div className="text-[#64748B]">
+                  YEAR: <span className="text-[#E2E8F0]">2026</span> · STATUS: <span className="text-[#00F0FF]">DEPLOYED</span>
+                </div>
+              </div>
             </div>
+          </article>
+
+          {/* =====================================================
+              SECONDARY SPECIMENS: 2-COLUMN ASYMMETRIC GRID
+              ===================================================== */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* SPECIMEN 02 */}
+            <article className="group relative border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-300 p-6 md:p-8 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-4 pb-4 border-b border-white/[0.04] mb-6">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs text-[#00F0FF]">01.02</span>
+                    <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200">
+                      Synaptic Dispatch Engine
+                    </h3>
+                  </div>
+                  <span className="font-mono text-[10px] text-[#64748B] uppercase">2025</span>
+                </div>
+
+                <div className="w-full h-44 bg-[#06060E] border border-white/[0.06] mb-6 flex flex-col items-center justify-center p-4 relative">
+                  <div className="font-mono text-[10px] text-[#00F0FF] tracking-widest uppercase mb-1">
+                    ASYNCHRONOUS EVENT PIPELINE
+                  </div>
+                  <div className="font-mono text-[9px] text-[#64748B] text-center max-w-xs">
+                    Deterministic signal state propagation with bounded FIFO queues and cycle avoidance.
+                  </div>
+                </div>
+
+                <p className="text-xs text-[#94A3B8] leading-relaxed font-normal mb-6">
+                  High-throughput event propagation system maintaining deterministic graph states across multi-hop cascades without memory leaks.
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-white/[0.04] font-mono text-[10px] text-[#64748B] flex items-center justify-between">
+                <span>TYPESCRIPT · NODE · WEBSOCKETS</span>
+                <span className="text-[#00F0FF]">ACTIVE</span>
+              </div>
+            </article>
+
+            {/* SPECIMEN 03 */}
+            <article className="group relative border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-300 p-6 md:p-8 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between gap-4 pb-4 border-b border-white/[0.04] mb-6">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs text-[#00F0FF]">01.03</span>
+                    <h3 className="text-lg sm:text-xl font-medium text-white tracking-tight group-hover:text-[#00F0FF] transition-colors duration-200">
+                      Spatial Grid Partitioning
+                    </h3>
+                  </div>
+                  <span className="font-mono text-[10px] text-[#64748B] uppercase">2025</span>
+                </div>
+
+                <div className="w-full h-44 bg-[#06060E] border border-white/[0.06] mb-6 flex flex-col items-center justify-center p-4 relative">
+                  <div className="font-mono text-[10px] text-[#00F0FF] tracking-widest uppercase mb-1">
+                    SUB-MILLISECOND LOOKUP HASH
+                  </div>
+                  <div className="font-mono text-[9px] text-[#64748B] text-center max-w-xs">
+                    Spatial index reducing $O(N^2)$ neighbor queries into $O(1)$ cell lookups.
+                  </div>
+                </div>
+
+                <p className="text-xs text-[#94A3B8] leading-relaxed font-normal mb-6">
+                  High-performance spatial hashing algorithm partitioning thousands of active 3D coordinates for fast proximity queries.
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-white/[0.04] font-mono text-[10px] text-[#64748B] flex items-center justify-between">
+                <span>DATA STRUCTURES · ALGORITHMS</span>
+                <span className="text-[#00F0FF]">STABLE</span>
+              </div>
+            </article>
           </div>
         </div>
       </section>
