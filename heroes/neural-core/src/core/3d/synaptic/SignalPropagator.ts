@@ -14,6 +14,8 @@ export interface ActiveSignal {
   nextNode: number | null;
 
   intensity: number;
+
+  baseIntensity: number;
 }
 
 export interface SignalEdge {
@@ -39,11 +41,17 @@ export class SignalPropagator {
 
   /**
    * Trigger a new neural impulse.
+   *
+   * @param startNode The origin node for the impulse.
+   * @param adjacencyList The network topology.
+   * @param speed Speed of signal progression along edges.
+   * @param initialIntensity Maximum initial intensity (1.0 for manual click, 0.28 for autonomous).
    */
   public triggerSignal(
     startNode: number,
     adjacencyList: Map<number, number[]>,
-    speed: number = 2.0
+    speed: number = 2.0,
+    initialIntensity: number = 1.0
   ): void {
     if (
       !adjacencyList.has(startNode)
@@ -163,7 +171,9 @@ export class SignalPropagator {
       nextNode:
         path[1],
 
-      intensity: 1,
+      intensity: initialIntensity,
+
+      baseIntensity: initialIntensity,
     });
   }
 
@@ -269,7 +279,7 @@ export class SignalPropagator {
           1
         );
 
-      signal.intensity =
+      const fadeFactor =
         Math.max(
           0.25,
           1.0 -
@@ -277,9 +287,13 @@ export class SignalPropagator {
               0.65
         );
 
+      signal.intensity =
+        signal.baseIntensity *
+        fadeFactor;
+
       /*
        * Current node receives strong
-       * illumination.
+       * illumination proportional to signal intensity.
        */
       const currentIntensity =
         signal.intensity *

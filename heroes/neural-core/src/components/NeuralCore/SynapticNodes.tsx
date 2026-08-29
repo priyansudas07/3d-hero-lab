@@ -781,17 +781,21 @@ export function SynapticNodes({
         connectedNodeIds.length > 0
       ) {
         autoTimerRef.current = 0;
-        nextAutoDelayRef.current = 1.5 + Math.random() * 2.7;
+        nextAutoDelayRef.current = 2.0 + Math.random() * 3.5;
 
         const randomStartNode =
           connectedNodeIds[
             Math.floor(Math.random() * connectedNodeIds.length)
           ];
 
+        /*
+         * Autonomous impulse: Subtle, ambient circulation (0.28 intensity, 1.2 speed)
+         */
         signalPropagator.triggerSignal(
           randomStartNode,
           adjacencyList,
-          1.4
+          1.2,
+          0.28
         );
       }
 
