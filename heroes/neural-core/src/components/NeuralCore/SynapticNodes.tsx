@@ -811,7 +811,7 @@ export function SynapticNodes({
 
 
       /* -----------------------------------------------------
-         Mouse world position
+         Mouse world position (Instantaneous Zero-Lag Tracking)
          ----------------------------------------------------- */
 
       const targetX =
@@ -822,21 +822,8 @@ export function SynapticNodes({
         state.pointer.y *
         3.8;
 
-      currentPointerWorld.current.x =
-        THREE.MathUtils.damp(
-          currentPointerWorld.current.x,
-          targetX,
-          5,
-          delta
-        );
-
-      currentPointerWorld.current.y =
-        THREE.MathUtils.damp(
-          currentPointerWorld.current.y,
-          targetY,
-          5,
-          delta
-        );
+      currentPointerWorld.current.x = targetX;
+      currentPointerWorld.current.y = targetY;
 
 
       /* -----------------------------------------------------
