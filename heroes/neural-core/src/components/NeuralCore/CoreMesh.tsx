@@ -45,6 +45,9 @@ export function CoreMesh({
   networkRef,
 }: CoreMeshProps) {
 
+  const groupRef =
+    useRef<THREE.Group>(null);
+
   const outerWireRef =
     useRef<THREE.Mesh>(null);
 
@@ -53,6 +56,15 @@ export function CoreMesh({
 
   const glowRef =
     useRef<THREE.Mesh>(null);
+
+  const outerMaterialRef =
+    useRef<THREE.MeshStandardMaterial>(null);
+
+  const innerMaterialRef =
+    useRef<THREE.MeshStandardMaterial>(null);
+
+  const glowMaterialRef =
+    useRef<THREE.MeshStandardMaterial>(null);
 
   /*
    * Damped network activity level (0.0 -> 1.0)
@@ -72,7 +84,7 @@ export function CoreMesh({
 
 
     /* =====================================================
-       CALCULATE REAL NETWORK ACTIVITY
+       1. REAL NETWORK ACTIVITY CALCULATION
        ===================================================== */
 
     let targetActivity = 0.0;
@@ -88,16 +100,24 @@ export function CoreMesh({
           totalIntensity += activeSignals[i].intensity;
         }
 
-        // Normalize activity level smoothly
-        targetActivity = Math.min(1.0, totalIntensity / 4.0);
+        // Normalize aggregate activity smoothly
+        targetActivity = Math.min(1.0, totalIntensity / 3.5);
       }
     }
 
-    // Damped interpolation to prevent strobing or sudden changes
+    /*
+     * Extremely subtle hover anticipation (0.04 boost)
+     * Hovering never overpowers real propagated signals
+     */
+    if (networkRef?.current?.hoveredNode !== null && networkRef?.current?.hoveredNode !== undefined) {
+      targetActivity = Math.max(targetActivity, 0.04);
+    }
+
+    // Smooth damping prevents strobing and harsh spikes
     smoothedActivity.current = THREE.MathUtils.damp(
       smoothedActivity.current,
       targetActivity,
-      3.5,
+      3.8,
       delta
     );
 
@@ -105,25 +125,29 @@ export function CoreMesh({
 
 
     /* =====================================================
-       OUTER GEODESIC SHELL
+       2. GLOBAL CORE SCALE RESPONSE (1.00x -> 1.05x)
        ===================================================== */
 
-    if (
-      outerWireRef.current
-    ) {
+    if (groupRef.current) {
+      const coreBaseScale =
+        1.0 + activity * 0.05;
 
-      const outerMat =
-        outerWireRef.current.material as THREE.MeshStandardMaterial;
-
-      if (outerMat) {
-        outerMat.emissiveIntensity =
-          1.2 + activity * 0.8;
-      }
+      groupRef.current.scale.setScalar(coreBaseScale);
     }
 
 
     /* =====================================================
-       INNER POLYHEDRON
+       3. OUTER GEODESIC SHELL
+       ===================================================== */
+
+    if (outerMaterialRef.current) {
+      outerMaterialRef.current.emissiveIntensity =
+        1.2 + activity * 0.7;
+    }
+
+
+    /* =====================================================
+       4. INNER POLYHEDRON
        ===================================================== */
 
     if (
@@ -150,9 +174,9 @@ export function CoreMesh({
         1.0 +
         Math.sin(
           time *
-          (2.5 + activity * 1.2)
+          (2.5 + activity * 1.0)
         ) *
-        (0.055 + activity * 0.035);
+        (0.055 + activity * 0.025);
 
 
       innerCoreRef.current
@@ -161,19 +185,15 @@ export function CoreMesh({
           pulse
         );
 
-
-      const innerMat =
-        innerCoreRef.current.material as THREE.MeshStandardMaterial;
-
-      if (innerMat) {
-        innerMat.emissiveIntensity =
-          1.5 + activity * 1.2;
+      if (innerMaterialRef.current) {
+        innerMaterialRef.current.emissiveIntensity =
+          1.5 + activity * 1.1;
       }
     }
 
 
     /* =====================================================
-       CENTRAL SINGULARITY
+       5. CENTRAL SINGULARITY (Primary Processing Heart)
        ===================================================== */
 
     if (
@@ -181,12 +201,12 @@ export function CoreMesh({
     ) {
 
       const glowPulse =
-        (1.0 + activity * 0.12) +
+        (1.0 + activity * 0.08) +
         Math.sin(
           time *
-          (2.0 + activity * 1.0)
+          (2.0 + activity * 0.8)
         ) *
-        (0.10 + activity * 0.05);
+        (0.10 + activity * 0.04);
 
 
       glowRef.current
@@ -195,13 +215,9 @@ export function CoreMesh({
           glowPulse
         );
 
-
-      const glowMat =
-        glowRef.current.material as THREE.MeshStandardMaterial;
-
-      if (glowMat) {
-        glowMat.emissiveIntensity =
-          2.0 + activity * 1.8;
+      if (glowMaterialRef.current) {
+        glowMaterialRef.current.emissiveIntensity =
+          2.0 + activity * 1.6;
       }
     }
 
@@ -214,7 +230,7 @@ export function CoreMesh({
 
   return (
 
-    <group>
+    <group ref={groupRef}>
 
       {/* =================================================
           OUTER GEODESIC SHELL
@@ -234,6 +250,9 @@ export function CoreMesh({
         />
 
         <meshStandardMaterial
+          ref={
+            outerMaterialRef
+          }
 
           color={
             primaryColor
@@ -280,6 +299,9 @@ export function CoreMesh({
         />
 
         <meshStandardMaterial
+          ref={
+            innerMaterialRef
+          }
 
           color={
             secondaryColor
@@ -327,6 +349,9 @@ export function CoreMesh({
         />
 
         <meshStandardMaterial
+          ref={
+            glowMaterialRef
+          }
 
           color={
             primaryColor
