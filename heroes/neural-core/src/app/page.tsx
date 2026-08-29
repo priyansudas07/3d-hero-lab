@@ -48,181 +48,277 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative w-full h-screen bg-[#030308] text-[#E2E8F0] overflow-hidden select-none flex flex-col justify-between p-6 md:p-10 font-sans">
+    <div className="relative w-full bg-[#030308] text-[#E2E8F0] select-none font-sans scroll-smooth">
       {/* =========================================================
-          LAYER 1: 3D NEURAL CANVAS CENTERPIECE
+          HERO SECTION (LAYERED 100vh FULLSCREEN CONTAINER)
           ========================================================= */}
-      <div className="absolute inset-0 z-0 pointer-events-auto">
-        <NeuralCoreCanvas
-          networkRef={networkRef}
-          nodeCount={3500}
-          interactionRadius={2.5}
-          attractionStrength={0.25}
-          primaryColor="#00F0FF"
-          secondaryColor="#A040FF"
-          backgroundColor="#030308"
-          showHUD={false}
-          offsetX={1.15}
-          className="w-full h-full"
-        />
-      </div>
-
-      {/* =========================================================
-          LAYER 2: EDITORIAL HEADER (RESTRAINED STRUCTURAL ORIENTATION)
-          ========================================================= */}
-      <header className="relative z-10 w-full flex items-start justify-between pointer-events-none pb-4 border-b border-white/[0.04]">
-        {/* Brand / Identity */}
-        <div className="flex flex-col gap-0.5 pointer-events-auto">
-          <div className="font-mono text-xs md:text-sm font-semibold tracking-wider text-white">
-            SYNAPSE LAB
-          </div>
-          <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-[#94A3B8]">
-            EXPERIMENTAL SOFTWARE & 3D SYSTEMS
-          </div>
+      <section className="relative w-full h-screen overflow-hidden flex flex-col justify-between p-6 md:p-10">
+        {/* =======================================================
+            LAYER 1: 3D NEURAL CANVAS CENTERPIECE
+            ======================================================= */}
+        <div className="absolute inset-0 z-0 pointer-events-auto">
+          <NeuralCoreCanvas
+            networkRef={networkRef}
+            nodeCount={3500}
+            interactionRadius={2.5}
+            attractionStrength={0.25}
+            primaryColor="#00F0FF"
+            secondaryColor="#A040FF"
+            backgroundColor="#030308"
+            showHUD={false}
+            offsetX={1.15}
+            className="w-full h-full"
+          />
         </div>
 
-        {/* Essential Navigation */}
-        <nav
-          aria-label="Main Navigation"
-          className="hidden sm:flex items-center gap-8 md:gap-10 font-mono text-[11px] text-[#64748B] tracking-widest uppercase pointer-events-auto"
-        >
-          <a
-            href="#projects"
-            className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
-          >
-            PROJECTS
-          </a>
-          <a
-            href="#experiments"
-            className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
-          >
-            EXPERIMENTS
-          </a>
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
-          >
-            GITHUB ↗
-          </a>
-        </nav>
-
-        {/* Minimal Telemetry State */}
-        <div className="font-mono text-[10px] md:text-[11px] text-[#64748B] text-right pointer-events-auto">
-          <div>STATUS // ACTIVE</div>
-          <div className="text-[#00F0FF]/90">ONLINE</div>
-        </div>
-      </header>
-
-      {/* =========================================================
-          LAYER 3: ASYMMETRIC EDITORIAL BODY
-          ========================================================= */}
-      <div className="relative z-10 w-full flex flex-col md:flex-row items-end justify-between gap-8 pointer-events-none mb-2">
-        {/* Left Column: Typographic Headline & Authentic Summary */}
-        <div className="max-w-lg pointer-events-auto">
-          <div className="font-mono text-[11px] text-[#00F0FF] uppercase tracking-[0.25em] mb-2.5">
-            Software Engineering & Graphics
+        {/* =======================================================
+            LAYER 2: EDITORIAL HEADER
+            ======================================================= */}
+        <header className="relative z-10 w-full flex items-start justify-between pointer-events-none pb-4 border-b border-white/[0.04]">
+          {/* Brand / Identity */}
+          <div className="flex flex-col gap-0.5 pointer-events-auto">
+            <div className="font-mono text-xs md:text-sm font-semibold tracking-wider text-white">
+              SYNAPSE LAB
+            </div>
+            <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-[#94A3B8]">
+              EXPERIMENTAL SOFTWARE & 3D SYSTEMS
+            </div>
           </div>
 
-          <h1 className="text-3xl md:text-5xl lg:text-[52px] font-medium tracking-tight text-white leading-[1.05] mb-4">
-            Building software systems and interactive 3D interfaces.
-          </h1>
-
-          <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed font-normal max-w-md">
-            Computer science student exploring full-stack engineering, real-time WebGL graphics, and graph-coupled simulation systems.
-          </p>
-        </div>
-
-        {/* Right Column: Direct Tactile Controls */}
-        <div className="flex flex-col items-start md:items-end gap-3 pointer-events-auto">
-          <div className="font-mono text-[10px] text-[#64748B] tracking-wider uppercase mb-1">
-            INTERACTIVE HERO // RAYCAST
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            {/* Primary Action Button */}
-            <button
-              onClick={handleTriggerCascade}
-              className="
-                px-4.5
-                py-2.5
-                border
-                border-[#00F0FF]/50
-                bg-[#00F0FF]/10
-                text-[#00F0FF]
-                hover:bg-[#00F0FF]
-                hover:text-[#030308]
-                hover:border-[#00F0FF]
-                active:scale-[0.97]
-                focus-visible:outline-none
-                focus-visible:ring-1
-                focus-visible:ring-[#00F0FF]
-                font-mono
-                text-xs
-                tracking-wider
-                uppercase
-                transition-all
-                duration-200
-                ease-out
-                cursor-pointer
-              "
+          {/* Essential Navigation */}
+          <nav
+            aria-label="Main Navigation"
+            className="hidden sm:flex items-center gap-8 md:gap-10 font-mono text-[11px] text-[#64748B] tracking-widest uppercase pointer-events-auto"
+          >
+            <a
+              href="#projects"
+              className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
             >
-              Fire Neural Pulse
-            </button>
-
-            {/* Secondary Action: GitHub Link */}
+              PROJECTS
+            </a>
+            <a
+              href="#experiments"
+              className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
+            >
+              EXPERIMENTS
+            </a>
             <a
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="
-                px-4.5
-                py-2.5
-                border
-                border-white/15
-                bg-transparent
-                text-[#94A3B8]
-                hover:text-white
-                hover:border-white/40
-                hover:bg-white/[0.03]
-                active:scale-[0.97]
-                focus-visible:outline-none
-                focus-visible:ring-1
-                focus-visible:ring-white/40
-                font-mono
-                text-xs
-                tracking-wider
-                uppercase
-                transition-all
-                duration-200
-                ease-out
-                cursor-pointer
-              "
+              className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
             >
-              GitHub ↗
+              GITHUB ↗
             </a>
+          </nav>
+
+          {/* Minimal Telemetry State */}
+          <div className="font-mono text-[10px] md:text-[11px] text-[#64748B] text-right pointer-events-auto">
+            <div>STATUS // ACTIVE</div>
+            <div className="text-[#00F0FF]/90">ONLINE</div>
+          </div>
+        </header>
+
+        {/* =======================================================
+            LAYER 3: ASYMMETRIC EDITORIAL BODY
+            ======================================================= */}
+        <div className="relative z-10 w-full flex flex-col md:flex-row items-end justify-between gap-8 pointer-events-none mb-2">
+          {/* Left Column: Typographic Headline & Authentic Summary */}
+          <div className="max-w-lg pointer-events-auto">
+            <div className="font-mono text-[11px] text-[#00F0FF] uppercase tracking-[0.25em] mb-2.5">
+              Software Engineering & Graphics
+            </div>
+
+            <h1 className="text-3xl md:text-5xl lg:text-[52px] font-medium tracking-tight text-white leading-[1.05] mb-4">
+              Building software systems and interactive 3D interfaces.
+            </h1>
+
+            <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed font-normal max-w-md">
+              Computer science student exploring full-stack engineering, real-time WebGL graphics, and graph-coupled simulation systems.
+            </p>
+          </div>
+
+          {/* Right Column: Direct Tactile Controls */}
+          <div className="flex flex-col items-start md:items-end gap-3 pointer-events-auto">
+            <div className="font-mono text-[10px] text-[#64748B] tracking-wider uppercase mb-1">
+              INTERACTIVE HERO // RAYCAST
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              {/* Primary Action Button */}
+              <button
+                onClick={handleTriggerCascade}
+                className="
+                  px-4.5
+                  py-2.5
+                  border
+                  border-[#00F0FF]/50
+                  bg-[#00F0FF]/10
+                  text-[#00F0FF]
+                  hover:bg-[#00F0FF]
+                  hover:text-[#030308]
+                  hover:border-[#00F0FF]
+                  active:scale-[0.97]
+                  focus-visible:outline-none
+                  focus-visible:ring-1
+                  focus-visible:ring-[#00F0FF]
+                  font-mono
+                  text-xs
+                  tracking-wider
+                  uppercase
+                  transition-all
+                  duration-200
+                  ease-out
+                  cursor-pointer
+                "
+              >
+                Fire Neural Pulse
+              </button>
+
+              {/* Secondary Action: Scroll to Projects */}
+              <a
+                href="#projects"
+                className="
+                  px-4.5
+                  py-2.5
+                  border
+                  border-white/15
+                  bg-transparent
+                  text-[#94A3B8]
+                  hover:text-white
+                  hover:border-white/40
+                  hover:bg-white/[0.03]
+                  active:scale-[0.97]
+                  focus-visible:outline-none
+                  focus-visible:ring-1
+                  focus-visible:ring-white/40
+                  font-mono
+                  text-xs
+                  tracking-wider
+                  uppercase
+                  transition-all
+                  duration-200
+                  ease-out
+                  cursor-pointer
+                "
+              >
+                Selected Work ↓
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+
+        {/* =======================================================
+            LAYER 4: TECHNICAL STATUS BAR
+            ======================================================= */}
+        <footer className="relative z-10 w-full pt-4 border-t border-white/[0.06] flex items-center justify-between font-mono text-[10px] text-[#64748B] tracking-wider pointer-events-none">
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] motion-safe:animate-pulse" />
+            <span>INTERACTION: CLICK / DRAG 3D CORE</span>
+          </div>
+
+          <div className="hidden sm:block pointer-events-auto">
+            WEBGL2 // THREE.JS / NEXT.JS
+          </div>
+
+          <a
+            href="#projects"
+            className="flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors duration-200 pointer-events-auto"
+          >
+            <span>SCROLL TO EXPLORE</span>
+            <span className="text-[#00F0FF]">↓</span>
+          </a>
+        </footer>
+      </section>
 
       {/* =========================================================
-          LAYER 4: TECHNICAL FOOTER / STATUS BAR
+          SECTION 01: SELECTED WORK TRANSITION & INTRODUCTION
           ========================================================= */}
-      <footer className="relative z-10 w-full pt-4 border-t border-white/[0.06] flex items-center justify-between font-mono text-[10px] text-[#64748B] tracking-wider pointer-events-none">
-        <div className="flex items-center gap-2 pointer-events-auto">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] motion-safe:animate-pulse" />
-          <span>INTERACTION: CLICK / DRAG 3D CORE</span>
+      <section
+        id="projects"
+        className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-10 pt-28 pb-36 border-t border-white/[0.06]"
+      >
+        {/* Section Identifier & Technical Index */}
+        <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/[0.04]">
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-xs text-[#00F0FF] tracking-widest uppercase">
+              01 // WORK
+            </span>
+            <span className="text-white/20">/</span>
+            <span className="font-mono text-xs text-[#94A3B8] tracking-wider uppercase">
+              SELECTED PROJECTS
+            </span>
+          </div>
+
+          <div className="font-mono text-[11px] text-[#64748B] tracking-widest uppercase hidden sm:block">
+            INDEX // 2024 — 2026
+          </div>
         </div>
 
-        <div className="hidden sm:block pointer-events-auto">
-          WEBGL2 // THREE.JS / NEXT.JS
+        {/* Section Header & Short Technical Context */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+          <div className="max-w-xl">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-medium tracking-tight text-white leading-[1.08] mb-4">
+              Engineered software and interactive graphics.
+            </h2>
+            <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed font-normal">
+              A curation of full-stack applications, real-time WebGL experiments, and algorithmic simulation systems designed with precision.
+            </p>
+          </div>
+
+          <div className="font-mono text-[11px] text-[#64748B] uppercase tracking-wider">
+            [ 03 SYSTEMS ACTIVE ]
+          </div>
         </div>
 
-        <div className="pointer-events-auto">
-          SYNAPSE.STUDIO // 2026
+        {/* Initial Clean Project Placeholders (Uncluttered Baseline) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-200">
+            <div className="font-mono text-[10px] text-[#00F0FF] uppercase tracking-wider mb-3">
+              01.01 // GRAPHICS
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">
+              Neural Core 3D
+            </h3>
+            <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
+              Real-time 3D graph simulation with instanced nodes and multi-hop impulse cascades.
+            </p>
+            <div className="font-mono text-[10px] text-[#64748B]">
+              THREE.JS / WEBGL / GLSL
+            </div>
+          </div>
+
+          <div className="p-6 border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-200">
+            <div className="font-mono text-[10px] text-[#00F0FF] uppercase tracking-wider mb-3">
+              01.02 // DISTRIBUTED SYSTEMS
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">
+              Synaptic Engine
+            </h3>
+            <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
+              High-throughput asynchronous event dispatcher with deterministic state evaluation.
+            </p>
+            <div className="font-mono text-[10px] text-[#64748B]">
+              TYPESCRIPT / NODE / WEBSOCKETS
+            </div>
+          </div>
+
+          <div className="p-6 border border-white/[0.08] bg-white/[0.01] hover:border-[#00F0FF]/40 transition-colors duration-200">
+            <div className="font-mono text-[10px] text-[#00F0FF] uppercase tracking-wider mb-3">
+              01.03 // ALGORITHMS
+            </div>
+            <h3 className="text-lg font-medium text-white mb-2">
+              Spatial Grid Partitioning
+            </h3>
+            <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
+              Sub-millisecond spatial neighborhood search across thousands of active 3D coordinates.
+            </p>
+            <div className="font-mono text-[10px] text-[#64748B]">
+              SPATIAL HASHING / PERFORMANCE
+            </div>
+          </div>
         </div>
-      </footer>
-    </main>
+      </section>
+    </div>
   );
 }
