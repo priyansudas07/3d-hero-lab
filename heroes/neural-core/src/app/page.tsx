@@ -26,7 +26,7 @@ export default function Home() {
 
   /*
    * Button -> NeuralCore Micro-Interaction:
-   * Clicking 'INITIALIZE CASCADE' fires a real neural cascade along a random high-degree node.
+   * Fires a real neural cascade along a connected graph node on click.
    */
   const handleTriggerCascade = useCallback(() => {
     const net = networkRef.current;
@@ -68,42 +68,44 @@ export default function Home() {
       </div>
 
       {/* =========================================================
-          LAYER 2: EDITORIAL HEADER (DISCIPLINED & TECHNICAL)
+          LAYER 2: EDITORIAL HEADER (PERSONAL IDENTITY)
           ========================================================= */}
-      <header className="relative z-10 w-full flex items-start justify-between pointer-events-none transition-opacity duration-500 ease-out">
-        <div className="flex flex-col gap-1 pointer-events-auto">
-          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#94A3B8]">
-            LAB // 01
-          </div>
+      <header className="relative z-10 w-full flex items-start justify-between pointer-events-none">
+        <div className="flex flex-col gap-0.5 pointer-events-auto">
           <div className="font-mono text-sm font-semibold tracking-wider text-white">
-            SYNAPTIC CORE
+            PRIYANSU DAS
+          </div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#94A3B8]">
+            CSE / SOFTWARE & 3D SYSTEMS
           </div>
         </div>
 
         <nav className="hidden md:flex items-center gap-10 font-mono text-[11px] text-[#64748B] tracking-widest uppercase pointer-events-auto">
           <a
-            href="#graph"
+            href="#projects"
             className="hover:text-white transition-colors duration-200"
           >
-            GRAPH DYNAMICS
+            PROJECTS
           </a>
           <a
-            href="#cascade"
+            href="#experiments"
             className="hover:text-white transition-colors duration-200"
           >
-            5-HOP CASCADE
+            EXPERIMENTS
           </a>
           <a
-            href="#grid"
+            href="https://github.com/priyansudas07"
+            target="_blank"
+            rel="noopener noreferrer"
             className="hover:text-white transition-colors duration-200"
           >
-            SPATIAL GRID
+            GITHUB
           </a>
         </nav>
 
         <div className="font-mono text-[11px] text-[#64748B] text-right pointer-events-auto">
-          <div>LATENCY: &lt;1.2MS</div>
-          <div className="text-[#00F0FF]/80">3,500 NODES</div>
+          <div>LOC // INDIA</div>
+          <div className="text-[#00F0FF]/90">AVAILABLE</div>
         </div>
       </header>
 
@@ -111,25 +113,25 @@ export default function Home() {
           LAYER 3: ASYMMETRIC EDITORIAL BODY
           ========================================================= */}
       <div className="relative z-10 w-full flex flex-col md:flex-row items-end justify-between gap-8 pointer-events-none mb-2">
-        {/* Left Column: Typographic Title & Technical Summary */}
+        {/* Left Column: Typographic Headline & Authentic Summary */}
         <div className="max-w-lg pointer-events-auto">
           <div className="font-mono text-[11px] text-[#00F0FF] uppercase tracking-[0.25em] mb-2.5">
-            Real-Time Neural Topology
+            Software Engineering & Graphics
           </div>
 
-          <h1 className="text-3xl md:text-5xl lg:text-[54px] font-medium tracking-tight text-white leading-[1.04] mb-4">
-            Directional graph flow in 3D space.
+          <h1 className="text-3xl md:text-5xl lg:text-[52px] font-medium tracking-tight text-white leading-[1.05] mb-4">
+            Building software systems and interactive 3D interfaces.
           </h1>
 
           <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed font-normal max-w-md">
-            Autonomous multi-hop signal propagation across an instanced spatial grid. Central geodesic processing core coupled to real-time network activity.
+            Computer science student exploring full-stack engineering, real-time WebGL graphics, and graph-coupled simulation systems.
           </p>
         </div>
 
-        {/* Right Column: Tactile Laboratory Controls */}
+        {/* Right Column: Direct Tactile Controls */}
         <div className="flex flex-col items-start md:items-end gap-3 pointer-events-auto">
           <div className="font-mono text-[10px] text-[#64748B] tracking-wider uppercase mb-1">
-            CONTROLS // RAYCAST ENABLED
+            INTERACTIVE HERO // RAYCAST
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -160,12 +162,14 @@ export default function Home() {
                 cursor-pointer
               "
             >
-              Initialize Cascade
+              Fire Neural Pulse
             </button>
 
-            {/* Secondary Action Link / Button */}
+            {/* Secondary Action: GitHub Link */}
             <a
-              href="#topology"
+              href="https://github.com/priyansudas07"
+              target="_blank"
+              rel="noopener noreferrer"
               className="
                 px-4.5
                 py-2.5
@@ -190,27 +194,27 @@ export default function Home() {
                 cursor-pointer
               "
             >
-              Inspect Graph
+              GitHub ↗
             </a>
           </div>
         </div>
       </div>
 
       {/* =========================================================
-          LAYER 4: TECHNICAL STATUS BAR
+          LAYER 4: TECHNICAL FOOTER / STATUS BAR
           ========================================================= */}
       <footer className="relative z-10 w-full pt-4 border-t border-white/[0.06] flex items-center justify-between font-mono text-[10px] text-[#64748B] tracking-wider pointer-events-none">
         <div className="flex items-center gap-2 pointer-events-auto">
           <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] motion-safe:animate-pulse" />
-          <span>INTERACTIVE MODE: CLICK ANY NODE</span>
+          <span>INTERACTION: CLICK / DRAG 3D CORE</span>
         </div>
 
         <div className="hidden sm:block pointer-events-auto">
-          ROTATION: 3-AXIS UNCOUPLED
+          WEBGL2 // THREE.JS / NEXT.JS
         </div>
 
         <div className="pointer-events-auto">
-          EXPERIMENT // 2026.08
+          PRIYANSU.DEV // 2026
         </div>
       </footer>
     </main>
