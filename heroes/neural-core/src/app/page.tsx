@@ -68,28 +68,33 @@ export default function Home() {
       </div>
 
       {/* =========================================================
-          LAYER 2: EDITORIAL HEADER (STUDIO / LAB IDENTITY)
+          LAYER 2: EDITORIAL HEADER (RESTRAINED STRUCTURAL ORIENTATION)
           ========================================================= */}
-      <header className="relative z-10 w-full flex items-start justify-between pointer-events-none">
+      <header className="relative z-10 w-full flex items-start justify-between pointer-events-none pb-4 border-b border-white/[0.04]">
+        {/* Brand / Identity */}
         <div className="flex flex-col gap-0.5 pointer-events-auto">
-          <div className="font-mono text-sm font-semibold tracking-wider text-white">
+          <div className="font-mono text-xs md:text-sm font-semibold tracking-wider text-white">
             SYNAPSE LAB
           </div>
-          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#94A3B8]">
+          <div className="font-mono text-[10px] md:text-[11px] uppercase tracking-[0.2em] text-[#94A3B8]">
             EXPERIMENTAL SOFTWARE & 3D SYSTEMS
           </div>
         </div>
 
-        <nav className="hidden md:flex items-center gap-10 font-mono text-[11px] text-[#64748B] tracking-widest uppercase pointer-events-auto">
+        {/* Essential Navigation */}
+        <nav
+          aria-label="Main Navigation"
+          className="hidden sm:flex items-center gap-8 md:gap-10 font-mono text-[11px] text-[#64748B] tracking-widest uppercase pointer-events-auto"
+        >
           <a
             href="#projects"
-            className="hover:text-white transition-colors duration-200"
+            className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
           >
             PROJECTS
           </a>
           <a
             href="#experiments"
-            className="hover:text-white transition-colors duration-200"
+            className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
           >
             EXPERIMENTS
           </a>
@@ -97,13 +102,14 @@ export default function Home() {
             href="https://github.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-white transition-colors duration-200"
+            className="hover:text-white transition-colors duration-200 focus-visible:outline-none focus-visible:text-white focus-visible:ring-1 focus-visible:ring-white/30 px-1 py-0.5"
           >
-            GITHUB
+            GITHUB ↗
           </a>
         </nav>
 
-        <div className="font-mono text-[11px] text-[#64748B] text-right pointer-events-auto">
+        {/* Minimal Telemetry State */}
+        <div className="font-mono text-[10px] md:text-[11px] text-[#64748B] text-right pointer-events-auto">
           <div>STATUS // ACTIVE</div>
           <div className="text-[#00F0FF]/90">ONLINE</div>
         </div>
