@@ -383,6 +383,9 @@ export function ConnectionLines({
       const nearbyFlags =
         network.nearbyFlags;
 
+      const hoveredNode =
+        network.hoveredNode;
+
       const edgeCount =
         Math.min(
           edges.length,
@@ -458,7 +461,20 @@ export function ConnectionLines({
           0;
 
         /*
-         * Require both endpoints (A & B) near cursor for subtle edge highlight
+         * Hovered Node Edge Boost:
+         * If either endpoint touches the currently hovered node,
+         * boost edge brightness to provide direct focus preview.
+         */
+        if (hoveredNode !== null && hoveredNode !== undefined) {
+          if (a === hoveredNode || b === hoveredNode) {
+            signalA = Math.max(signalA, 0.45);
+            signalB = Math.max(signalB, 0.45);
+          }
+        }
+
+        /*
+         * Mouse Proximity Boost:
+         * Require both endpoints near cursor for subtle edge highlight.
          */
         if (nearbyFlags && nearbyFlags[a] !== 0 && nearbyFlags[b] !== 0) {
           signalA = Math.max(signalA, 0.16);

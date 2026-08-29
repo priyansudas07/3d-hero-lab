@@ -46,6 +46,9 @@ export interface SynapticNetworkState {
 
   nearbyFlags?:
     Uint8Array | null;
+
+  hoveredNode?:
+    number | null;
 }
 
 export type SynapticNetworkRef =
@@ -122,13 +125,16 @@ export function SynapticNodes({
   const nextAutoDelayRef = useRef(1.5);
 
   /* ---------------------------------------------------------
-     Mouse
+     Mouse & Hover State Tracking (Refs to prevent state overhead)
      --------------------------------------------------------- */
 
   const currentPointerWorld =
     useRef(
       new THREE.Vector3()
     );
+
+  const hoveredNodeRef =
+    useRef<number | null>(null);
 
   /* ---------------------------------------------------------
      Reusable objects
@@ -539,6 +545,9 @@ export function SynapticNodes({
     networkRef.current.nearbyFlags =
       nearbyFlags;
 
+    networkRef.current.hoveredNode =
+      hoveredNodeRef.current;
+
     return () => {
 
       if (
@@ -562,6 +571,9 @@ export function SynapticNodes({
           null;
 
         networkRef.current.nearbyFlags =
+          null;
+
+        networkRef.current.hoveredNode =
           null;
 
         networkRef.current.nodeCount =
@@ -650,8 +662,34 @@ export function SynapticNodes({
 
 
   /* =========================================================
-     MANUAL CLICK
+     POINTER / HOVER HANDLERS
      ========================================================= */
+
+  const handlePointerOver =
+    (
+      event: ThreeEvent<PointerEvent>
+    ) => {
+
+      event.stopPropagation();
+
+      if (
+        event.instanceId !== undefined
+      ) {
+        hoveredNodeRef.current =
+          event.instanceId;
+      }
+    };
+
+  const handlePointerOut =
+    (
+      event: ThreeEvent<PointerEvent>
+    ) => {
+
+      event.stopPropagation();
+
+      hoveredNodeRef.current =
+        null;
+    };
 
   const handlePointerDown =
     (
@@ -703,6 +741,16 @@ export function SynapticNodes({
       if (!mesh) {
         return;
       }
+
+      /* -----------------------------------------------------
+         Publish hoveredNode state to shared networkRef
+         ----------------------------------------------------- */
+
+      if (networkRef) {
+        networkRef.current.hoveredNode =
+          hoveredNodeRef.current;
+      }
+
 
       /* -----------------------------------------------------
          AUTONOMOUS PROBABILISTIC NEURAL IMPULSES
@@ -808,6 +856,19 @@ export function SynapticNodes({
             1;
         }
       }
+
+
+      /* -----------------------------------------------------
+         Hovered Node & 1-Hop Neighbor Lookup
+         ----------------------------------------------------- */
+
+      const currentHovered =
+        hoveredNodeRef.current;
+
+      const hoveredNeighbors =
+        currentHovered !== null
+          ? adjacencyList?.get(currentHovered)
+          : null;
 
 
       /* -----------------------------------------------------
@@ -941,6 +1002,15 @@ export function SynapticNodes({
             i
           ) ?? 0;
 
+        const isDirectHover =
+          i === currentHovered;
+
+        const isHoverNeighbor =
+          !isDirectHover &&
+          hoveredNeighbors !== null &&
+          hoveredNeighbors !== undefined &&
+          hoveredNeighbors.includes(i);
+
 
         /* ---------------------------------------------------
            Return to base position
@@ -977,14 +1047,14 @@ export function SynapticNodes({
 
 
         /* ---------------------------------------------------
-           Node scale
+           Node scale calculation (Strict Hierarchy)
            --------------------------------------------------- */
 
         let scale =
           scales[i];
 
         /*
-         * Signal produces a strong pulse.
+         * 1. Active traveling signal (1.5x - 2.0x)
          */
         if (
           signal > 0
@@ -997,7 +1067,27 @@ export function SynapticNodes({
         }
 
         /*
-         * Cursor produces a softer reaction.
+         * 2. Direct Hover Focus (1.35x)
+         */
+        else if (
+          isDirectHover
+        ) {
+
+          scale *= 1.35;
+        }
+
+        /*
+         * 3. Hovered Neighbor (1.15x)
+         */
+        else if (
+          isHoverNeighbor
+        ) {
+
+          scale *= 1.15;
+        }
+
+        /*
+         * 4. Mouse-field neighborhood reaction (1.0x - 1.7x)
          */
         else if (
           nearbyFlags[i] !== 0
@@ -1058,7 +1148,7 @@ export function SynapticNodes({
 
 
         /* ---------------------------------------------------
-           Color
+           Color & Emissive Highlight (Strict Hierarchy)
            --------------------------------------------------- */
 
         const instanceColors =
@@ -1068,13 +1158,13 @@ export function SynapticNodes({
           instanceColors
         ) {
 
+          /*
+           * 1. Active traveling signal (Pushes toward bright white)
+           */
           if (
             signal > 0
           ) {
 
-            /*
-             * Signal pushes node toward white.
-             */
             instanceColors.setXYZ(
               i,
 
@@ -1100,38 +1190,105 @@ export function SynapticNodes({
 
           }
 
+          /*
+           * 2. Direct Hover Focus (Strong cyan/white preview)
+           */
+          else if (
+            isDirectHover
+          ) {
+
+            instanceColors.setXYZ(
+              i,
+
+              THREE.MathUtils.lerp(
+                baseColors[index],
+                1,
+                0.75
+              ),
+
+              THREE.MathUtils.lerp(
+                baseColors[index + 1],
+                1,
+                0.75
+              ),
+
+              THREE.MathUtils.lerp(
+                baseColors[index + 2],
+                1,
+                0.75
+              )
+
+            );
+
+          }
+
+          /*
+           * 3. Hovered Neighbor (Subtle secondary highlight)
+           */
+          else if (
+            isHoverNeighbor
+          ) {
+
+            instanceColors.setXYZ(
+              i,
+
+              THREE.MathUtils.lerp(
+                baseColors[index],
+                1,
+                0.35
+              ),
+
+              THREE.MathUtils.lerp(
+                baseColors[index + 1],
+                1,
+                0.35
+              ),
+
+              THREE.MathUtils.lerp(
+                baseColors[index + 2],
+                1,
+                0.35
+              )
+
+            );
+
+          }
+
+          /*
+           * 4. Mouse-field proximity highlight
+           */
           else if (
             nearbyFlags[i] !== 0
           ) {
 
-            /*
-             * Cursor influence slightly brightens nearby node.
-             */
             instanceColors.setXYZ(
               i,
 
               THREE.MathUtils.lerp(
                 baseColors[index],
                 1,
-                0.35
+                0.20
               ),
 
               THREE.MathUtils.lerp(
                 baseColors[index + 1],
                 1,
-                0.35
+                0.20
               ),
 
               THREE.MathUtils.lerp(
                 baseColors[index + 2],
                 1,
-                0.35
+                0.20
               )
 
             );
 
           }
 
+          /*
+           * 5. Baseline state
+           */
           else {
 
             instanceColors.setXYZ(
@@ -1175,6 +1332,12 @@ export function SynapticNodes({
         undefined,
         count,
       ]}
+      onPointerOver={
+        handlePointerOver
+      }
+      onPointerOut={
+        handlePointerOut
+      }
       onPointerDown={
         handlePointerDown
       }
