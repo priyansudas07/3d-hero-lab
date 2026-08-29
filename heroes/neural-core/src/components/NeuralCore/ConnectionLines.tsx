@@ -31,7 +31,7 @@ interface ConnectionLinesProps {
 
 
 /* =========================================================
-   VERTEX SHADER
+   VERTEX SHADER (WITH Z-DEPTH PASS-THROUGH)
    ========================================================= */
 
 const vertexShader = `
@@ -39,6 +39,8 @@ const vertexShader = `
   attribute float aSignal;
 
   varying float vSignal;
+
+  varying float vDepthFactor;
 
   void main() {
 
@@ -52,10 +54,20 @@ const vertexShader = `
         1.0
       );
 
-    gl_Position =
-      projectionMatrix *
+    vec4 viewPosition =
       viewMatrix *
       worldPosition;
+
+    /*
+     * View-space depth factor:
+     * Subtle attenuation (0.80 in background -> 1.15 in foreground)
+     */
+    vDepthFactor =
+      clamp(0.95 + position.z * 0.08, 0.80, 1.15);
+
+    gl_Position =
+      projectionMatrix *
+      viewPosition;
   }
 
 `;
@@ -73,14 +85,16 @@ const fragmentShader = `
 
   varying float vSignal;
 
+  varying float vDepthFactor;
+
 
   void main() {
 
     /*
-     * Extremely subtle inactive network.
+     * Extremely subtle inactive network with depth attenuation.
      */
     float base =
-      0.075;
+      0.075 * vDepthFactor;
 
 
     /*
@@ -120,7 +134,7 @@ const fragmentShader = `
 
 
     float alpha =
-      0.025 +
+      (0.025 * vDepthFactor) +
       signal *
       0.75;
 

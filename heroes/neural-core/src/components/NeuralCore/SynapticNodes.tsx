@@ -997,6 +997,20 @@ export function SynapticNodes({
         const index =
           i * 3;
 
+        const nodeZ =
+          currentPositions[index + 2];
+
+        /*
+         * Subtle Z-Depth Factor (0.75 in background -> 1.15 in foreground)
+         * Creates natural 3D volumetric layering without fog
+         */
+        const depthFactor =
+          THREE.MathUtils.clamp(
+            0.95 + nodeZ * 0.10,
+            0.75,
+            1.15
+          );
+
         const signal =
           activeSignals.get(
             i
@@ -1047,11 +1061,11 @@ export function SynapticNodes({
 
 
         /* ---------------------------------------------------
-           Node scale calculation (Strict Hierarchy)
+           Node scale calculation (Strict Hierarchy + Depth)
            --------------------------------------------------- */
 
         let scale =
-          scales[i];
+          scales[i] * depthFactor;
 
         /*
          * 1. Active traveling signal (1.5x - 2.0x)
@@ -1148,7 +1162,7 @@ export function SynapticNodes({
 
 
         /* ---------------------------------------------------
-           Color & Emissive Highlight (Strict Hierarchy)
+           Color & Emissive Highlight (Strict Hierarchy + Depth)
            --------------------------------------------------- */
 
         const instanceColors =
@@ -1265,19 +1279,19 @@ export function SynapticNodes({
               i,
 
               THREE.MathUtils.lerp(
-                baseColors[index],
+                baseColors[index] * depthFactor,
                 1,
                 0.20
               ),
 
               THREE.MathUtils.lerp(
-                baseColors[index + 1],
+                baseColors[index + 1] * depthFactor,
                 1,
                 0.20
               ),
 
               THREE.MathUtils.lerp(
-                baseColors[index + 2],
+                baseColors[index + 2] * depthFactor,
                 1,
                 0.20
               )
@@ -1287,16 +1301,16 @@ export function SynapticNodes({
           }
 
           /*
-           * 5. Baseline state
+           * 5. Baseline state with subtle depth attenuation
            */
           else {
 
             instanceColors.setXYZ(
               i,
 
-              baseColors[index],
-              baseColors[index + 1],
-              baseColors[index + 2]
+              baseColors[index] * depthFactor,
+              baseColors[index + 1] * depthFactor,
+              baseColors[index + 2] * depthFactor
             );
           }
         }
