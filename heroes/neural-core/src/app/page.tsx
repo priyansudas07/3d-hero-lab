@@ -367,7 +367,7 @@ export default function Home() {
               <div className="relative z-10 text-center flex flex-col items-center px-6 transition-transform duration-300 ease-out group-hover:scale-[1.02]">
                 <div className="w-16 h-16 rounded-full border border-[#00F0FF]/40 flex items-center justify-center mb-4 relative">
                   <div className="w-6 h-6 border border-[#A040FF]/60 rotate-45" />
-                  <div className="absolute w-2 h-2 rounded-full bg-[#00F0FF] animate-ping" />
+                  <div className="absolute w-2 h-2 rounded-full bg-[#00F0FF] shadow-[0_0_8px_#00F0FF]" />
                 </div>
                 <div className="font-mono text-xs text-white tracking-widest uppercase mb-1">
                   INSTANCED 3D GRAPH // 3,500 NODES

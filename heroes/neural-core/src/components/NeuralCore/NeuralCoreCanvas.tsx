@@ -417,9 +417,10 @@ export function NeuralCoreCanvas({
   ] =
     useState(false);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-
     setMounted(true);
 
     if (typeof window !== 'undefined') {
@@ -430,6 +431,20 @@ export function NeuralCoreCanvas({
       setIsMobileDevice(isMobile);
     }
 
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVisible(entry.isIntersecting);
+      },
+      { threshold: 0.05 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
 
@@ -542,6 +557,7 @@ export function NeuralCoreCanvas({
   return (
 
     <div
+      ref={containerRef}
       className={`
         relative
         w-full
@@ -594,7 +610,7 @@ export function NeuralCoreCanvas({
 
           dpr={targetDpr}
 
-          frameloop="always"
+          frameloop={isVisible ? "always" : "never"}
           gl={{
             antialias: true,
 
