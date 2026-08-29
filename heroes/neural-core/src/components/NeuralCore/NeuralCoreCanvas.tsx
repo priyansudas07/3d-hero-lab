@@ -124,17 +124,17 @@ function NeuralSystem({
     );
 
   /*
-   * Smooth dynamic scale based on viewport width
-   * Mobile (< 6.0 width): scale down slightly to prevent clipping
-   * Tablet (6.0 - 10.0 width): balanced footprint
-   * Desktop (> 10.0 width): full cinematic presence
+   * Smooth dynamic scale based on viewport width (Phase 6.5.1 Hero Scale Tuning)
+   * Mobile (< 5.5 width): 0.98 (compact, zero clipping on phones)
+   * Tablet (5.5 - 8.5 width): 1.18 (balanced footprint)
+   * Desktop (> 8.5 width): 1.40 (hero centerpiece visual dominance)
    */
   const responsiveScale =
     viewport.width < 5.5
-      ? 0.85
+      ? 0.98
       : viewport.width < 8.5
-      ? 1.0
-      : 1.18;
+      ? 1.18
+      : 1.40;
 
 
   /* =======================================================
