@@ -3,19 +3,11 @@ import { NeuralCoreCanvas } from '@/components/NeuralCore/NeuralCoreCanvas';
 
 export default function Home() {
   return (
-    <main className="relative w-full min-h-screen bg-[#030308] text-white overflow-x-hidden select-none flex flex-col justify-between">
+    <main className="relative w-full h-screen bg-[#030308] text-[#E2E8F0] overflow-hidden select-none flex flex-col justify-between p-6 md:p-10 font-sans">
       {/* =========================================================
-          BACKGROUND AMBIENCE
+          LAYER 1: 3D NEURAL CANVAS CENTERPIECE
           ========================================================= */}
-      <div className="absolute inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/4 left-1/3 -translate-x-1/2 w-[700px] h-[500px] bg-cyan-500/[0.03] blur-[150px] rounded-full" />
-        <div className="absolute top-1/2 right-1/4 w-[600px] h-[500px] bg-purple-600/[0.03] blur-[150px] rounded-full" />
-      </div>
-
-      {/* =========================================================
-          3D NEURAL CANVAS BACKGROUND
-          ========================================================= */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-0 pointer-events-auto">
         <NeuralCoreCanvas
           nodeCount={3500}
           interactionRadius={2.5}
@@ -29,86 +21,81 @@ export default function Home() {
       </div>
 
       {/* =========================================================
-          HEADER / BRAND
+          LAYER 2: EDITORIAL HEADER (DISCIPLINED & TECHNICAL)
           ========================================================= */}
-      <header className="relative z-10 w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between pointer-events-auto">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg border border-cyan-500/40 bg-cyan-950/40 flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_#00F0FF]" />
+      <header className="relative z-10 w-full flex items-start justify-between pointer-events-none">
+        <div className="flex flex-col gap-1 pointer-events-auto">
+          <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-[#94A3B8]">
+            LAB // 01
           </div>
-          <span className="font-mono text-xs font-semibold tracking-[0.25em] text-white uppercase">
-            Synaptic<span className="text-cyan-400">Core</span>
-          </span>
+          <div className="font-mono text-sm font-semibold tracking-wider text-white">
+            SYNAPTIC CORE
+          </div>
         </div>
 
-        <nav className="hidden md:flex items-center gap-8 font-mono text-xs text-neutral-400 tracking-wider">
-          <a href="#graph" className="hover:text-cyan-400 transition-colors">
-            GRAPH
-          </a>
-          <a href="#impulses" className="hover:text-cyan-400 transition-colors">
-            PROPAGATION
-          </a>
-          <a href="#topology" className="hover:text-cyan-400 transition-colors">
-            TOPOLOGY
-          </a>
-        </nav>
+        <div className="hidden md:flex items-center gap-12 font-mono text-[11px] text-[#64748B] tracking-widest uppercase pointer-events-auto">
+          <span>GRAPH DYNAMICS</span>
+          <span>5-HOP CASCADE</span>
+          <span>SPATIAL GRID</span>
+        </div>
 
-        <div className="flex items-center gap-3 font-mono text-xs">
-          <button className="px-3.5 py-1.5 rounded-lg border border-white/10 text-neutral-300 hover:border-cyan-500/40 hover:text-white bg-slate-950/60 backdrop-blur-md transition-all">
-            PROD READY
-          </button>
+        <div className="font-mono text-[11px] text-[#64748B] text-right pointer-events-auto">
+          <div>LATENCY: &lt;1.2MS</div>
+          <div className="text-[#00F0FF]/80">3,500 NODES</div>
         </div>
       </header>
 
       {/* =========================================================
-          HERO CONTENT (UNOBSTRUCTED TOP / BOTTOM SPLIT)
+          LAYER 3: ASYMMETRIC EDITORIAL BODY
           ========================================================= */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto px-6 pt-4 pb-12 flex flex-col items-center justify-between flex-grow pointer-events-none">
-        {/* Top Header Statement */}
-        <div className="text-center flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-cyan-500/30 bg-slate-950/60 backdrop-blur-md mb-4 pointer-events-auto">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="font-mono text-[11px] text-cyan-300 tracking-widest uppercase">
-              3D Neural Field Engine
-            </span>
+      <div className="relative z-10 w-full flex flex-col md:flex-row items-end justify-between gap-8 pointer-events-none">
+        {/* Left Column: Typographic Title & Technical Summary */}
+        <div className="max-w-md pointer-events-auto">
+          <div className="font-mono text-[11px] text-[#00F0FF] uppercase tracking-[0.25em] mb-3">
+            Real-Time Neural Topology
           </div>
 
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-white max-w-2xl leading-[1.12]">
-            Simulate Neural Systems in Real Time
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-[1.05] mb-4">
+            Directional graph flow in 3D space.
           </h1>
+
+          <p className="text-xs md:text-sm text-[#94A3B8] leading-relaxed font-normal">
+            Autonomous multi-hop signal propagation across an instanced spatial grid. Central geodesic processing core coupled to real-time network activity.
+          </p>
         </div>
 
-        {/* Central Space is Reserved for the 3D Neural Core */}
-        <div className="w-full h-44 sm:h-56 md:h-64" />
+        {/* Right Column: Restrained Technical Controls */}
+        <div className="flex flex-col items-start md:items-end gap-3 pointer-events-auto">
+          <div className="font-mono text-[10px] text-[#64748B] tracking-wider uppercase mb-1">
+            CONTROLS // RAYCAST ENABLED
+          </div>
 
-        {/* Bottom Description & CTAs */}
-        <div className="text-center flex flex-col items-center max-w-xl">
-          <p className="text-xs sm:text-sm md:text-base text-neutral-400 mb-6 font-normal leading-relaxed">
-            3,500 active synaptic nodes with directional multi-hop impulse cascades, raycast hover intelligence, and responsive 3D spatial depth.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full sm:w-auto pointer-events-auto">
-            <button className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-medium text-xs sm:text-sm tracking-wide shadow-[0_0_20px_rgba(0,240,255,0.35)] hover:shadow-[0_0_28px_rgba(0,240,255,0.5)] transition-all">
-              Initialize Engine
+          <div className="flex items-center gap-2.5">
+            <button className="px-4 py-2 border border-[#00F0FF]/40 bg-[#00F0FF]/10 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-[#030308] font-mono text-xs tracking-wider uppercase transition-all">
+              Initialize Cascade
             </button>
-            <button className="w-full sm:w-auto px-6 py-2.5 rounded-xl border border-white/15 hover:border-cyan-500/40 text-neutral-200 hover:text-white bg-slate-950/60 backdrop-blur-md text-xs sm:text-sm font-medium tracking-wide transition-all">
-              Inspect Topology
+            <button className="px-4 py-2 border border-white/15 bg-transparent text-[#94A3B8] hover:text-white hover:border-white/40 font-mono text-xs tracking-wider uppercase transition-all">
+              Inspect Graph
             </button>
           </div>
         </div>
       </div>
 
       {/* =========================================================
-          FOOTER STATUS
+          LAYER 4: TECHNICAL STATUS BAR
           ========================================================= */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto px-6 py-5 flex items-center justify-between font-mono text-[11px] text-neutral-500 pointer-events-auto">
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span className="text-neutral-400 tracking-wider">3,500 NODES ACTIVE</span>
+      <footer className="relative z-10 w-full pt-4 border-t border-white/[0.06] flex items-center justify-between font-mono text-[10px] text-[#64748B] tracking-wider pointer-events-none">
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#00F0FF] animate-pulse" />
+          <span>INTERACTIVE MODE: CLICK ANY NODE</span>
         </div>
 
-        <div className="text-cyan-400/90 tracking-wider text-[10px] sm:text-[11px]">
-          CLICK ANY NODE TO FIRE CASCADE
+        <div className="hidden sm:block pointer-events-auto">
+          ROTATION: 3-AXIS UNCOUPLED
+        </div>
+
+        <div className="pointer-events-auto">
+          EXPERIMENT // 2026.08
         </div>
       </footer>
     </main>
