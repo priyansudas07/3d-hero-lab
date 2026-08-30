@@ -91,7 +91,7 @@ export default function Home() {
       {/* =========================================================
           HERO SECTION (RESPONSIVE FULLSCREEN CENTERPIECE)
           ========================================================= */}
-      <section aria-label="Hero Introduction" className="relative w-full min-h-[640px] h-screen overflow-hidden flex flex-col justify-between p-6 md:p-10">
+      <section aria-label="Hero Introduction" className="relative w-full min-h-[640px] h-screen overflow-x-clip overflow-y-visible flex flex-col justify-between p-6 md:p-10">
         {/* =======================================================
             LAYER 1: 3D NEURAL CANVAS CENTERPIECE
             ======================================================= */}
@@ -279,7 +279,7 @@ export default function Home() {
       {/* =========================================================
           MAIN ACCESSIBLE CONTENT LANDMARK
           ========================================================= */}
-      <main id="main-content" className="w-full">
+      <main id="main-content" className="relative z-10 w-full bg-[#030308]">
         {/* =======================================================
             SECTION 01: CURATED TECHNICAL ARCHIVE
             ======================================================= */}

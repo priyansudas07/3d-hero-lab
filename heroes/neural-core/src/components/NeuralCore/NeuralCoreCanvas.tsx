@@ -529,7 +529,8 @@ export function NeuralCoreCanvas({
         relative
         w-full
         ${className ? className : 'h-screen'}
-        overflow-hidden
+        overflow-x-clip
+        overflow-y-visible
       `}
     >
 
