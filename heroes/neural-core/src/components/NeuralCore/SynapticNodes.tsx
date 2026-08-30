@@ -1007,346 +1007,132 @@ export function SynapticNodes({
          Update every node
          ----------------------------------------------------- */
 
-      for (
-        let i = 0;
-        i < count;
-        i++
-      ) {
+      /* -----------------------------------------------------
+         Selective/Dirty Node Update:
+         Only recalculate 3,500 node transforms and colors when active
+         signals, hovering, or cursor repulsion are taking place.
+         ----------------------------------------------------- */
 
-        const index =
-          i * 3;
+      const hasActiveSignals = activeSignals.size > 0;
+      const hasHover = currentHovered !== null;
+      const hasProximity = numNear > 0;
+      const needsFullUpdate = hasActiveSignals || hasHover || hasProximity;
 
-        const nodeZ =
-          currentPositions[index + 2];
-
-        /*
-         * Subtle Z-Depth Factor (0.75 in background -> 1.15 in foreground)
-         * Creates natural 3D volumetric layering without fog
-         */
-        const depthFactor =
-          THREE.MathUtils.clamp(
+      if (needsFullUpdate) {
+        for (
+          let i = 0;
+          i < count;
+          i++
+        ) {
+          const index = i * 3;
+          const nodeZ = currentPositions[index + 2];
+          const depthFactor = THREE.MathUtils.clamp(
             0.95 + nodeZ * 0.10,
             0.75,
             1.15
           );
 
-        const signal =
-          activeSignals.get(
-            i
-          ) ?? 0;
+          const signal = activeSignals.get(i) ?? 0;
+          const isDirectHover = i === currentHovered;
+          const isHoverNeighbor =
+            !isDirectHover &&
+            hoveredNeighbors !== null &&
+            hoveredNeighbors !== undefined &&
+            hoveredNeighbors.includes(i);
 
-        const isDirectHover =
-          i === currentHovered;
-
-        const isHoverNeighbor =
-          !isDirectHover &&
-          hoveredNeighbors !== null &&
-          hoveredNeighbors !== undefined &&
-          hoveredNeighbors.includes(i);
-
-
-        /* ---------------------------------------------------
-           Return to base position
-           --------------------------------------------------- */
-
-        if (
-          nearbyFlags[i] === 0
-        ) {
-
-          currentPositions[index] =
-            THREE.MathUtils.damp(
+          /* Return to base position */
+          if (nearbyFlags[i] === 0) {
+            currentPositions[index] = THREE.MathUtils.damp(
               currentPositions[index],
               initialPositions[index],
               3.5,
               delta
             );
-
-          currentPositions[index + 1] =
-            THREE.MathUtils.damp(
+            currentPositions[index + 1] = THREE.MathUtils.damp(
               currentPositions[index + 1],
               initialPositions[index + 1],
               3.5,
               delta
             );
-
-          currentPositions[index + 2] =
-            THREE.MathUtils.damp(
+            currentPositions[index + 2] = THREE.MathUtils.damp(
               currentPositions[index + 2],
               initialPositions[index + 2],
               3.5,
               delta
             );
-        }
-
-
-        /* ---------------------------------------------------
-           Node scale calculation (Strict Hierarchy + Depth)
-           --------------------------------------------------- */
-
-        let scale =
-          scales[i] * depthFactor;
-
-        /*
-         * 1. Active traveling signal (1.6x - 2.2x) - State 3 Click / Signal
-         */
-        if (
-          signal > 0
-        ) {
-
-          scale *=
-            1 +
-            signal *
-            2.0;
-        }
-
-        /*
-         * 2. Direct Hover Focus (1.25x) - State 2 Hover
-         */
-        else if (
-          isDirectHover
-        ) {
-
-          scale *= 1.25;
-        }
-
-        /*
-         * 3. Hovered Neighbor (1.10x) - State 2 Sub-network Preview
-         */
-        else if (
-          isHoverNeighbor
-        ) {
-
-          scale *= 1.10;
-        }
-
-        /*
-         * 4. Mouse-field neighborhood reaction (1.0x - 1.7x)
-         */
-        else if (
-          nearbyFlags[i] !== 0
-        ) {
-
-          const dx =
-            initialPositions[index] -
-            currentPointerWorld.current.x;
-
-          const dy =
-            initialPositions[index + 1] -
-            currentPointerWorld.current.y;
-
-          const distance =
-            Math.sqrt(
-              dx * dx +
-              dy * dy
-            );
-
-          if (
-            distance <
-            interactionRadius
-          ) {
-
-            const factor =
-              1 -
-              distance /
-              interactionRadius;
-
-            scale *=
-              1 +
-              factor *
-              0.7;
-          }
-        }
-
-
-        /* ---------------------------------------------------
-           Matrix
-           --------------------------------------------------- */
-
-        reusableDummy.position.set(
-          currentPositions[index],
-          currentPositions[index + 1],
-          currentPositions[index + 2]
-        );
-
-        reusableDummy.scale.setScalar(
-          scale
-        );
-
-        reusableDummy.updateMatrix();
-
-        mesh.setMatrixAt(
-          i,
-          reusableDummy.matrix
-        );
-
-
-        /* ---------------------------------------------------
-           Color & Emissive Highlight (Strict Hierarchy + Depth)
-           --------------------------------------------------- */
-
-        const instanceColors =
-          mesh.instanceColor;
-
-        if (
-          instanceColors
-        ) {
-
-          /*
-           * 1. Active traveling signal (Pushes toward bright white)
-           */
-          if (
-            signal > 0
-          ) {
-
-            instanceColors.setXYZ(
-              i,
-
-              THREE.MathUtils.lerp(
-                baseColors[index],
-                1,
-                signal
-              ),
-
-              THREE.MathUtils.lerp(
-                baseColors[index + 1],
-                1,
-                signal
-              ),
-
-              THREE.MathUtils.lerp(
-                baseColors[index + 2],
-                1,
-                signal
-              )
-
-            );
-
           }
 
-          /*
-           * 2. Direct Hover Focus (Strong cyan/white preview)
-           */
-          else if (
-            isDirectHover
-          ) {
-
-            instanceColors.setXYZ(
-              i,
-
-              THREE.MathUtils.lerp(
-                baseColors[index],
-                1,
-                0.75
-              ),
-
-              THREE.MathUtils.lerp(
-                baseColors[index + 1],
-                1,
-                0.75
-              ),
-
-              THREE.MathUtils.lerp(
-                baseColors[index + 2],
-                1,
-                0.75
-              )
-
-            );
-
+          let scale = scales[i] * depthFactor;
+          if (signal > 0) {
+            scale *= 1 + signal * 2.0;
+          } else if (isDirectHover) {
+            scale *= 1.25;
+          } else if (isHoverNeighbor) {
+            scale *= 1.10;
+          } else if (nearbyFlags[i] !== 0) {
+            const dx = initialPositions[index] - currentPointerWorld.current.x;
+            const dy = initialPositions[index + 1] - currentPointerWorld.current.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < interactionRadius) {
+              const factor = 1 - distance / interactionRadius;
+              scale *= 1 + factor * 0.7;
+            }
           }
 
-          /*
-           * 3. Hovered Neighbor (Subtle secondary highlight)
-           */
-          else if (
-            isHoverNeighbor
-          ) {
+          reusableDummy.position.set(
+            currentPositions[index],
+            currentPositions[index + 1],
+            currentPositions[index + 2]
+          );
+          reusableDummy.scale.setScalar(scale);
+          reusableDummy.updateMatrix();
+          mesh.setMatrixAt(i, reusableDummy.matrix);
 
-            instanceColors.setXYZ(
-              i,
-
-              THREE.MathUtils.lerp(
-                baseColors[index],
-                1,
-                0.35
-              ),
-
-              THREE.MathUtils.lerp(
-                baseColors[index + 1],
-                1,
-                0.35
-              ),
-
-              THREE.MathUtils.lerp(
-                baseColors[index + 2],
-                1,
-                0.35
-              )
-
-            );
-
-          }
-
-          /*
-           * 4. Mouse-field proximity highlight
-           */
-          else if (
-            nearbyFlags[i] !== 0
-          ) {
-
-            instanceColors.setXYZ(
-              i,
-
-              THREE.MathUtils.lerp(
+          const instanceColors = mesh.instanceColor;
+          if (instanceColors) {
+            if (signal > 0) {
+              instanceColors.setXYZ(
+                i,
+                THREE.MathUtils.lerp(baseColors[index], 1, signal),
+                THREE.MathUtils.lerp(baseColors[index + 1], 1, signal),
+                THREE.MathUtils.lerp(baseColors[index + 2], 1, signal)
+              );
+            } else if (isDirectHover) {
+              instanceColors.setXYZ(
+                i,
+                THREE.MathUtils.lerp(baseColors[index], 1, 0.75),
+                THREE.MathUtils.lerp(baseColors[index + 1], 1, 0.75),
+                THREE.MathUtils.lerp(baseColors[index + 2], 1, 0.75)
+              );
+            } else if (isHoverNeighbor) {
+              instanceColors.setXYZ(
+                i,
+                THREE.MathUtils.lerp(baseColors[index], 1, 0.35),
+                THREE.MathUtils.lerp(baseColors[index + 1], 1, 0.35),
+                THREE.MathUtils.lerp(baseColors[index + 2], 1, 0.35)
+              );
+            } else if (nearbyFlags[i] !== 0) {
+              instanceColors.setXYZ(
+                i,
+                THREE.MathUtils.lerp(baseColors[index] * depthFactor, 1, 0.20),
+                THREE.MathUtils.lerp(baseColors[index + 1] * depthFactor, 1, 0.20),
+                THREE.MathUtils.lerp(baseColors[index + 2] * depthFactor, 1, 0.20)
+              );
+            } else {
+              instanceColors.setXYZ(
+                i,
                 baseColors[index] * depthFactor,
-                1,
-                0.20
-              ),
-
-              THREE.MathUtils.lerp(
                 baseColors[index + 1] * depthFactor,
-                1,
-                0.20
-              ),
-
-              THREE.MathUtils.lerp(
-                baseColors[index + 2] * depthFactor,
-                1,
-                0.20
-              )
-
-            );
-
-          }
-
-          /*
-           * 5. Baseline state with subtle depth attenuation
-           */
-          else {
-
-            instanceColors.setXYZ(
-              i,
-
-              baseColors[index] * depthFactor,
-              baseColors[index + 1] * depthFactor,
-              baseColors[index + 2] * depthFactor
-            );
+                baseColors[index + 2] * depthFactor
+              );
+            }
           }
         }
-      }
 
-
-      mesh.instanceMatrix
-        .needsUpdate =
-        true;
-
-      if (
-        mesh.instanceColor
-      ) {
-
-        mesh.instanceColor
-          .needsUpdate =
-          true;
+        mesh.instanceMatrix.needsUpdate = true;
+        if (mesh.instanceColor) {
+          mesh.instanceColor.needsUpdate = true;
+        }
       }
     }
   );
