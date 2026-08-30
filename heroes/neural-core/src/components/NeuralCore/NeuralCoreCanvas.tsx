@@ -557,6 +557,7 @@ export function NeuralCoreCanvas({
           absolute
           inset-0
           z-0
+          touch-pan-y
         "
       >
 
