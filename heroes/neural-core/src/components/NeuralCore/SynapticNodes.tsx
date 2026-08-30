@@ -814,13 +814,16 @@ export function SynapticNodes({
          Mouse world position (Instantaneous Zero-Lag Tracking)
          ----------------------------------------------------- */
 
-      const targetX =
-        state.pointer.x *
-        5.2;
+      const isPointerInHero =
+        Math.abs(state.pointer.x) <= 1.05 && Math.abs(state.pointer.y) <= 1.05;
 
-      const targetY =
-        state.pointer.y *
-        3.8;
+      const targetX = isPointerInHero
+        ? state.pointer.x * 5.2
+        : 999.0;
+
+      const targetY = isPointerInHero
+        ? state.pointer.y * 3.8
+        : 999.0;
 
       currentPointerWorld.current.x = targetX;
       currentPointerWorld.current.y = targetY;

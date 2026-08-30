@@ -183,13 +183,14 @@ function NeuralSystem({
 
       /* =====================================================
          MOUSE → TRUE 3D TILT
+         Only react to mouse coordinates when within the active hero viewport
          ===================================================== */
 
-      const mouseX =
-        state.pointer.x;
+      const isPointerInHero =
+        Math.abs(state.pointer.x) <= 1.05 && Math.abs(state.pointer.y) <= 1.05;
 
-      const mouseY =
-        state.pointer.y;
+      const mouseX = isPointerInHero ? state.pointer.x : 0;
+      const mouseY = isPointerInHero ? state.pointer.y : 0;
 
       const tiltAmountX =
         0.35;
