@@ -407,60 +407,36 @@ export function ConnectionLines({
         );
 
 
+      let positionsInitialized = false;
+
       for (
         let i = 0;
         i < edgeCount;
         i++
       ) {
+        const [a, b] = edges[i];
+        const vertexA = i * 2;
+        const vertexB = vertexA + 1;
 
-        const [
-          a,
-          b,
-        ] =
-          edges[i];
+        if (!positionAttribute.version || positionAttribute.version <= 1) {
+          const aIndex = a * 3;
+          const bIndex = b * 3;
 
-        const aIndex =
-          a * 3;
+          positionAttribute.setXYZ(
+            vertexA,
+            positions[aIndex],
+            positions[aIndex + 1],
+            positions[aIndex + 2]
+          );
 
-        const bIndex =
-          b * 3;
-
-        const vertexA =
-          i * 2;
-
-        const vertexB =
-          vertexA + 1;
-
-
-        /* -------------------------------------------------
-           Position A
-           ------------------------------------------------- */
-
-        positionAttribute.setXYZ(
-          vertexA,
-
-          positions[aIndex],
-
-          positions[aIndex + 1],
-
-          positions[aIndex + 2]
-        );
-
-
-        /* -------------------------------------------------
-           Position B
-           ------------------------------------------------- */
-
-        positionAttribute.setXYZ(
-          vertexB,
-
-          positions[bIndex],
-
-          positions[bIndex + 1],
-
-          positions[bIndex + 2]
-        );
-
+          positionAttribute.setXYZ(
+            vertexB,
+            positions[bIndex],
+            positions[bIndex + 1],
+            positions[bIndex + 2]
+          );
+          positionsInitialized = true;
+        }
 
         /* -------------------------------------------------
            Endpoint signal & cursor influence
@@ -507,8 +483,10 @@ export function ConnectionLines({
       }
 
 
-      positionAttribute.needsUpdate =
-        true;
+      if (positionsInitialized) {
+        positionAttribute.needsUpdate =
+          true;
+      }
 
       signalAttribute.needsUpdate =
         true;

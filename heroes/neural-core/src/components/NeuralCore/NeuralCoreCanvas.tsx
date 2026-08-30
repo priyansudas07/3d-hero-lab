@@ -575,7 +575,7 @@ export function NeuralCoreCanvas({
 
           dpr={targetDpr}
 
-          frameloop={isVisible ? "always" : "never"}
+          frameloop="always"
           gl={{
             antialias: true,
 
