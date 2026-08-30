@@ -561,6 +561,7 @@ export function NeuralCoreCanvas({
       >
 
         <Canvas
+          eventSource={containerRef as React.RefObject<HTMLElement>}
           camera={{
             position: [
               0,
