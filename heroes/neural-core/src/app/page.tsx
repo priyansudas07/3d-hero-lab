@@ -95,7 +95,7 @@ export default function Home() {
         {/* =======================================================
             LAYER 1: 3D NEURAL CANVAS CENTERPIECE
             ======================================================= */}
-        <div className="absolute inset-0 z-0 pointer-events-auto">
+        <div className="absolute inset-0 z-0">
           <NeuralCoreCanvas
             networkRef={networkRef}
             nodeCount={3500}

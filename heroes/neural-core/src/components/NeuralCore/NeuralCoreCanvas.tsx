@@ -558,11 +558,13 @@ export function NeuralCoreCanvas({
           inset-0
           z-0
           touch-pan-y
+          pointer-events-none
         "
       >
 
         <Canvas
           eventSource={containerRef as React.RefObject<HTMLElement>}
+          style={{ pointerEvents: 'auto' }}
           camera={{
             position: [
               0,
