@@ -215,14 +215,14 @@ function NeuralSystem({
 
 
       /* =====================================================
-         SMOOTH DAMPING
+         SMOOTH DAMPING (Immediate & Locked)
          ===================================================== */
 
       currentRotation.current.x =
         THREE.MathUtils.damp(
           currentRotation.current.x,
           targetRotation.current.x,
-          4.0,
+          12.0,
           delta
         );
 
@@ -230,7 +230,7 @@ function NeuralSystem({
         THREE.MathUtils.damp(
           currentRotation.current.y,
           targetRotation.current.y,
-          4.0,
+          12.0,
           delta
         );
 
@@ -238,7 +238,7 @@ function NeuralSystem({
         THREE.MathUtils.damp(
           currentRotation.current.z,
           targetRotation.current.z,
-          4.0,
+          12.0,
           delta
         );
 

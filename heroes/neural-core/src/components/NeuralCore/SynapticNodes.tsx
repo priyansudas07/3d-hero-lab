@@ -1045,19 +1045,19 @@ export function SynapticNodes({
             currentPositions[index] = THREE.MathUtils.damp(
               currentPositions[index],
               initialPositions[index],
-              3.5,
+              14.0,
               delta
             );
             currentPositions[index + 1] = THREE.MathUtils.damp(
               currentPositions[index + 1],
               initialPositions[index + 1],
-              3.5,
+              14.0,
               delta
             );
             currentPositions[index + 2] = THREE.MathUtils.damp(
               currentPositions[index + 2],
               initialPositions[index + 2],
-              3.5,
+              14.0,
               delta
             );
           }
