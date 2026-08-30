@@ -506,13 +506,14 @@ export function NeuralCoreCanvas({
      ======================================================= */
 
   /*
-   * On mobile devices, clamp node count and DPR gracefully to ensure 60fps
+   * DPR Clamped to [1, 1.5] across all screens:
+   * Provides crisp high-DPI rendering on Retina/4K displays while avoiding
+   * the GPU fill-rate penalty of DPR 2.0+ (Phase 8.0C).
    */
   const effectiveNodeCount =
     isMobileDevice ? Math.min(nodeCount, 2200) : nodeCount;
 
-  const targetDpr: [number, number] =
-    isMobileDevice ? [1, 1.5] : [1, 2];
+  const targetDpr: [number, number] = [1, 1.5];
 
 
   /* =======================================================
